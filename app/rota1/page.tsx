@@ -41,29 +41,30 @@ export default function BesuDAppPage() {
     };
   }, []);
 
-  async function pollStatus() {
+  async function pollStatus() { // Polling (verificação periódica) do status do benchmark
     if (pollRef.current) return;
 
-    const id = window.setInterval(async () => {
+    const id = window.setInterval(async () => { // Verifica se finalizou a cada 1s
       try {
-        const res = await fetch("/api/benchmark/start");
+        const res = await fetch("/api/benchmark/start");  // Método GET omitido
         
-        if (!res.ok) {
+        if (!res.ok) {  // Erro na requisição
           const data = await res.json().catch(() => null);
+
           setBenchError(data?.error || "Erro ao verificar status");
           setBenchRunning(false);
           setBenchFinished(true);
+
           if (pollRef.current) {
-            clearInterval(pollRef.current);
+            clearInterval(pollRef.current); // Para polling
             pollRef.current = null;
           }
           return;
         }
 
         const data = await res.json();
-        if (data.running) {
-          // still running
-        } else if (data.finished) {
+        
+        if (!data.running && data.finished) {
           setBenchOutput(data.stdout ?? null);
           setBenchError(data.stderr ?? null);
           setBenchRunning(false);
@@ -188,7 +189,7 @@ export default function BesuDAppPage() {
                 />
               </div>
 
-              <div>
+              <div className="flex flex-col">
                 <label className="text-sm font-medium">Upload .sol</label>
                 <input
                   type="file"

@@ -15,7 +15,8 @@ export default async function Home() {
           priority
         />
         <p>Inicio projeto Benchmark utilizando Next</p>
-        <a className="px-4 py-2 rounded-lg bg-indigo-600 text-white" href="rota1">Ir para rota1</a>
+        <a className="px-4 py-2 rounded-lg bg-indigo-600 text-white" href="rota1">Ir para rota de teste</a>
+        <a className="px-4 py-2 rounded-lg bg-indigo-600 text-white" href="dashboard">Ir para dashboard</a>
       </main>
     </div>
   );

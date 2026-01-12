@@ -32,7 +32,7 @@ async function readStatus() {
   }
 }
 
-export async function GET() {
+export async function GET() { // Get current benchmark status
   let s = await readStatus();
 
   // If status says running but report.html exists, consider it finished.
@@ -55,7 +55,7 @@ export async function GET() {
   return NextResponse.json(s);
 }
 
-export async function POST() {
+export async function POST() {  // Start a new benchmark
   const current = await readStatus();
   if (current.running) {
     return NextResponse.json({ error: "Benchmark já em execução" }, { status: 409 });
