@@ -2,7 +2,7 @@
 
 # dependencies
 /node_modules/
-/caliper/node_modules/
+/src/caliper/node_modules/
 /.pnp
 .pnp.*
 .yarn/*
