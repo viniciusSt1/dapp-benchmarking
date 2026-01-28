@@ -1,0 +1,5 @@
+Name,Succ,Fail,Send Rate (TPS),Max Latency (s),Min Latency (s),Avg Latency (s),Throughput (TPS),Experiment,TestType,TPS,Report
+query,1000,0,501.5,0.02,0.00,0.00,501.0,6n-15s-ibft-v25.10.0_20260124_141512,query,500,query_tps500
+query,1000,0,595.6,0.01,0.00,0.00,594.9,6n-15s-ibft-v25.10.0_20260124_141512,query,600,query_tps600
+query,1000,0,581.4,0.01,0.00,0.00,580.7,6n-15s-ibft-v25.10.0_20260124_141512,query,700,query_tps700
+query,1000,0,597.0,0.01,0.00,0.00,596.7,6n-15s-ibft-v25.10.0_20260124_141512,query,800,query_tps800
