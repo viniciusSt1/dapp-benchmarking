@@ -1,0 +1,5 @@
+Name,Succ,Fail,Send Rate (TPS),Max Latency (s),Min Latency (s),Avg Latency (s),Throughput (TPS),Experiment,TestType,TPS,Report
+transfer,50,0,102.9,10.65,10.18,10.42,4.7,4n-15s-ibft-v25.10.0_20260124_135544,transfer,100,transfer_tps100
+transfer,50,0,113.6,10.48,10.04,10.27,4.8,4n-15s-ibft-v25.10.0_20260124_135544,transfer,110,transfer_tps110
+transfer,50,0,124.1,10.31,9.92,10.11,4.8,4n-15s-ibft-v25.10.0_20260124_135544,transfer,120,transfer_tps120
+transfer,50,0,134.4,7.00,6.64,6.82,7.1,4n-15s-ibft-v25.10.0_20260124_135544,transfer,130,transfer_tps130

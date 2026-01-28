@@ -1,0 +1,5 @@
+Name,Succ,Fail,Send Rate (TPS),Max Latency (s),Min Latency (s),Avg Latency (s),Throughput (TPS),Experiment,TestType,TPS,Report
+open,1000,0,160.3,8.09,4.69,6.45,91.5,4n-5s-ibft-v25.12.0_20260124_030515,open,160,open_tps160
+open,1000,0,180.1,6.46,4.03,5.18,97.9,4n-5s-ibft-v25.12.0_20260124_030515,open,180,open_tps180
+open,1000,0,200.2,9.59,4.68,5.70,99.2,4n-5s-ibft-v25.12.0_20260124_030515,open,200,open_tps200
+open,1000,0,220.5,6.46,0.27,5.08,107.4,4n-5s-ibft-v25.12.0_20260124_030515,open,220,open_tps220

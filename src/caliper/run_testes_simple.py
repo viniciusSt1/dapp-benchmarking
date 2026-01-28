@@ -57,7 +57,7 @@ def run_test(tps, function_name, benchmark_file):
         os.rename('report.html', report_path)
         print(f"✅ Relatório salvo em {report_path}")
     else:
-        print(f"⚠️ Relatório não encontrado para {function_name} @ {tps} TPS.")
+        print(f"Relatório não encontrado para {function_name} @ {tps} TPS.")
 
 # Executa todos os testes
 if __name__ == "__main__":
