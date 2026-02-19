@@ -6,7 +6,9 @@ import { toast } from 'sonner';
 
 import { useAppStore } from '@/src/store/useAppStore';
 
+/*
 const networks = [
+  { name: 'Selecione uma rede', chainId: "", symbol: '-' },
   { name: 'Ethereum Mainnet', chainId: 1, symbol: 'ETH' },
   { name: 'Sepolia Testnet', chainId: 11155111, symbol: 'SepoliaETH' },
   { name: 'Polygon Mainnet', chainId: 137, symbol: 'MATIC' },
@@ -14,56 +16,101 @@ const networks = [
   { name: 'Besu Private Network', chainId: 1337, symbol: 'ETH' },
   { name: 'Arbitrum One', chainId: 42161, symbol: 'ETH' },
   { name: 'Optimism', chainId: 10, symbol: 'ETH' },
-  { name: 'Outro', chainId: 0, symbol: '-' },
+  { name: 'Outro', chainId: null, symbol: '-' },
 ];
+*/
 
 export default function BlockchainConfig() {
   const blockchain = useAppStore((state) => state.blockchain);
   const setBlockchain = useAppStore((state) => state.setBlockchain);
 
-  const [selectedNetwork, setSelectedNetwork] = useState(networks[1]);
-  const [rpcEndpoint, setRpcEndpoint] = useState('https://sepolia.infura.io/v3/YOUR_API_KEY');
-  const [explorerUrl, setExplorerUrl] = useState('https://sepolia.etherscan.io');
-  const [chainId, setChainId] = useState<number>(networks[1].chainId);
+  //const [selectedNetwork, setSelectedNetwork] = useState(blockchain.chainId ? networks.find(n => n.chainId === blockchain.chainId) || networks[0] : networks[0]);
+  //const [chainId, setChainId] = useState<number | string>(blockchain.chainId ?? null);
+
+  const [rpcEndpoint, setRpcEndpoint] = useState('');
+  const [explorerUrl, setExplorerUrl] = useState('');
+
+  const [wsEndpoint, setWsEndpoint] = useState('');
+  const [metricsEndpoint, setMetricsEndpoint] = useState('');
 
   const [isConnected, setIsConnected] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
 
-  const setDefaults = () => {
-      setRpcEndpoint('https://sepolia.infura.io/v3/YOUR_API_KEY');
-      setExplorerUrl('https://sepolia.etherscan.io');
-      setSelectedNetwork(networks[1]);
-      setChainId(networks[1].chainId);
-      setIsConnected(false);
-  };
+  const hasChanges =
+    blockchain.rpcEndpoint !== rpcEndpoint ||
+    blockchain.wsEndpoint !== wsEndpoint ||
+    blockchain.metricsEndpoint !== metricsEndpoint ||
+    blockchain.explorerUrl !== explorerUrl;
+
 
   useEffect(() => {
-    setRpcEndpoint(blockchain.rpcUrl);
+    // Carregar valores do Zustand
+    setRpcEndpoint(blockchain.rpcEndpoint ?? '');
+    setWsEndpoint(blockchain.wsEndpoint ?? '');
+    setMetricsEndpoint(blockchain.metricsEndpoint ?? '');
+    setExplorerUrl(blockchain.explorerUrl ?? '');
+    //setChainId(blockchain.chainId ?? '');
 
-    if(blockchain.chainId)
-      setChainId(blockchain.chainId);
+    console.log('DADOS ZUSTEND:', blockchain);
 
-    setExplorerUrl(blockchain.explorerUrl);
+    checkConnection();
+  }, [blockchain]);
 
-    if(blockchain.chainId && blockchain.rpcUrl && blockchain.explorerUrl) {
-      setIsConnected(true);
-    } else {
-      setDefaults();
+  async function checkConnection() {
+    if (!blockchain.rpcEndpoint) {
+      setIsConnected(false);
+      return;
     }
-  }, []);
+
+    const res = await fetch("/api/rpc", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        rpcEndpoint: blockchain.rpcEndpoint,
+        jsonrpc: "2.0",
+        id: 1,
+        method: "eth_chainId",
+        params: [],
+      }),
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      if (data.result) {
+        setIsConnected(true);
+        return;
+      }
+    }
+
+    setIsConnected(false);
+  }
 
   const handleConnect = async () => { // Ao pressionar botão de conectar
     setIsConnecting(true);
 
     setBlockchain({
-      rpcUrl: rpcEndpoint,
-      chainId: chainId,
+      //chainId: chainId,
+      rpcEndpoint: rpcEndpoint,
+      wsEndpoint: wsEndpoint,
+      metricsEndpoint: metricsEndpoint,
       explorerUrl: explorerUrl,
     });
 
+    console.log('useState:', {
+      rpcEndpoint,
+      wsEndpoint,
+      metricsEndpoint,
+      explorerUrl,
+    });
+
+    console.log('Zuntend:', {
+      blockchain: blockchain,
+    });
+
+    await checkConnection();
+
     // Simulando conexão -> implementar teste se conectou corretamente
     setTimeout(() => {
-      setIsConnected(true);
       setIsConnecting(false);
       toast.success('Conectado à rede com sucesso!');
     }, 1500);
@@ -73,22 +120,40 @@ export default function BlockchainConfig() {
     setIsConnected(false);
 
     setBlockchain({
-      rpcUrl: '',
-      chainId: 0,
+      rpcEndpoint: '',
+      wsEndpoint: '',
+      metricsEndpoint: '',
+      chainId: '',
       explorerUrl: '',
     });
 
-    setDefaults();
-
     toast.info('Desconectado da rede');
+
+    setRpcEndpoint('');
+    setWsEndpoint('');
+    setMetricsEndpoint('');
+    setExplorerUrl('');
+    //setChainId(0);
   };
 
+  const handleUpdate = () => {
+    setBlockchain({
+      rpcEndpoint,
+      wsEndpoint,
+      metricsEndpoint,
+      explorerUrl,
+    });
+
+    toast.success("Configurações atualizadas!");
+  };
+
+
+  /*
   const handleNetworkChange = (networkName: string) => {
-    const network = networks.find(n => n.name === networkName);
+    const network:any = networks.find(n => n.name === networkName);
     if (!network) return;
 
     setSelectedNetwork(network);
-    setIsConnected(false);
 
     if (network.name === 'Outro') {
       setChainId(0);
@@ -108,7 +173,7 @@ export default function BlockchainConfig() {
       setRpcEndpoint('https://polygon-rpc.com');
       setExplorerUrl('https://polygonscan.com');
     }
-  };
+  }; */
 
   return (
     <div className="space-y-6">
@@ -126,7 +191,6 @@ export default function BlockchainConfig() {
                 <CheckCircle2 className="w-6 h-6 text-green-500" />
                 <div>
                   <p className="text-white">Conectado</p>
-                  <p className="text-slate-400">{selectedNetwork.name}</p>
                 </div>
               </>
             ) : (
@@ -141,12 +205,25 @@ export default function BlockchainConfig() {
           </div>
 
           {isConnected ? (
-            <button
-              onClick={handleDisconnect}
-              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-            >
-              Desconectar
-            </button>
+            <div className="flex items-center gap-2">
+
+              {hasChanges && (
+                <button
+                  onClick={handleUpdate}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  Atualizar
+                </button>
+              )}
+
+              <button
+                onClick={handleDisconnect}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+              >
+                Desconectar
+              </button>
+
+            </div>
           ) : (
             <button
               onClick={handleConnect}
@@ -159,7 +236,7 @@ export default function BlockchainConfig() {
           )}
         </div>
 
-        {/* Seleção de Rede */}
+        {/* Chain ID 
         <div>
           <label className="block text-white mb-2">
             Rede <span className="text-red-500">*</span>
@@ -177,7 +254,7 @@ export default function BlockchainConfig() {
           </select>
         </div>
 
-        {/* Chain ID */}
+
         <div>
           <label className="block text-white mb-2">Chain ID</label>
           <input
@@ -190,23 +267,51 @@ export default function BlockchainConfig() {
           {selectedNetwork.name !== 'Outro' && (
             <p className="text-slate-500 mt-1">Preenchido automaticamente</p>
           )}
-        </div>
+        </div>*/}
 
-        {/* RPC Endpoint */}
+        {/* RPC HTTP Endpoint */}
         <div>
           <label className="block text-white mb-2">
-            RPC Endpoint <span className="text-red-500">*</span>
+            RPC Endpoint (HTTP) <span className="text-red-500">*</span>
           </label>
           <input
             type="text"
             value={rpcEndpoint}
             onChange={(e) => setRpcEndpoint(e.target.value)}
-            placeholder="https://..."
+            placeholder="http://localhost:8545"
             className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-purple-600"
           />
           <p className="text-slate-500 mt-1">
-            URL do nó RPC para comunicação com a blockchain
+            URL do nó RPC para comunicação via HTTP
           </p>
+        </div>
+
+        {/* WebSocket Endpoint */}
+        <div>
+          <label className="block text-white mb-2">
+            WebSocket Endpoint (WS RPC)
+          </label>
+          <input
+            type="text"
+            value={wsEndpoint}
+            onChange={(e) => setWsEndpoint(e.target.value)}
+            placeholder="ws://localhost:8645"
+            className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-purple-600"
+          />
+          <p className="text-slate-500 mt-1">URL do WebSocket RPC do nó</p>
+        </div>
+
+        {/* Métricas */}
+        <div>
+          <label className="block text-white mb-2">Endpoint de Métricas</label>
+          <input
+            type="text"
+            value={metricsEndpoint}
+            onChange={(e) => setMetricsEndpoint(e.target.value)}
+            placeholder="http://localhost:9545/metrics"
+            className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-purple-600"
+          />
+          <p className="text-slate-500 mt-1">Endpoint usado para Prometheus/Grafana</p>
         </div>
 
         {/* Block Explorer URL */}
@@ -231,7 +336,7 @@ export default function BlockchainConfig() {
           </div>
         </div>
 
-        {/* Informações da Rede */}
+        {/* Informações da Rede 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="p-4 bg-slate-800/50 rounded-lg">
             <p className="text-slate-400 mb-1">Símbolo Nativo</p>
@@ -247,8 +352,9 @@ export default function BlockchainConfig() {
             <p className="text-slate-400 mb-1">Latência</p>
             <p className="text-white">{isConnected ? '45ms' : '-'}</p>
           </div>
-        </div>
+        </div>*/}
       </div>
     </div>
   );
+
 }

@@ -1,18 +1,20 @@
 import { NextResponse } from "next/server";
 import { ContractFactory } from "ethers";
-import { wallet } from "@/src/lib/blockchain/besu";
+import { createWallet } from "@/src/lib/blockchain/besu";
 import { compileSolidity } from "@/src/lib/blockchain/compile";
 
 export async function POST(req: Request) {
   try {
-    const { contractSource, contractName } = await req.json();
+    const { contractSource, contractName, privateKey, rpcEndpoint } = await req.json();
 
     const { abi, bytecode } = compileSolidity(
       contractSource,
-      contractName
+      contractName,
     );
 
     console.log("Bytecode length:", bytecode.length);
+
+    const wallet = createWallet(privateKey, rpcEndpoint);
 
     const factory = new ContractFactory(abi, bytecode, wallet);
 

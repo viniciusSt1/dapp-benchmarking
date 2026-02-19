@@ -22,10 +22,7 @@ const menuItems = [
     { href: "/contracts", label: "Smart Contracts", icon: FileCode },
     { href: "/wallet", label: "Carteira", icon: Wallet },
     { href: "/transactions", label: "Transações", icon: Receipt },
-    { href: "/functions", label: "Funções do Contrato", icon: Code2 },
     { href: "/caliper-tests", label: "Testes Caliper", icon: Activity },
-    { href: "/settings", label: "Configurações Avançadas", icon: Settings },
-    { href: "/security", label: "Segurança", icon: Shield },
 ];
 
 export default function Sidebar() {

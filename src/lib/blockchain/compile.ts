@@ -1,6 +1,7 @@
+import { version } from "os";
 import solc from "solc";
 
-export function compileSolidity(source: string, contractName: string) {
+export function compileSolidity(source: string, contractName: string, evmVersion: string = "london") {
     const input = {
         language: "Solidity",
         sources: {
@@ -9,7 +10,7 @@ export function compileSolidity(source: string, contractName: string) {
             },
         },
         settings: {
-            evmVersion: "london", // --> Definido no genesis.json (evm um pouco antiga no momento)
+            evmVersion: evmVersion, // --> Definido no genesis.json (evm um pouco antiga no momento)
             outputSelection: {
                 "*": {
                     "*": ["abi", "evm.bytecode"],

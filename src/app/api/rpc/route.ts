@@ -1,16 +1,34 @@
 import { NextResponse } from "next/server";
 
-const RPC_URL = "http://127.0.0.1:8545";
-
 export async function POST(req: Request) {
-  const body = await req.json();
+  try {
+    const body = await req.json();
 
-  const response = await fetch(RPC_URL, { // Make RPC call
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
+    const { rpcEndpoint, ...rpcRequest } = body;
 
-  const data = await response.json();
-  return NextResponse.json(data);
+    console.log("RPC Request:", rpcRequest);
+    console.log("RPC Endpoint:", rpcEndpoint);
+
+    if (!rpcEndpoint) {
+      return NextResponse.json(
+        { error: "rpcEndpoint não fornecida" },
+        { status: 400 }
+      );
+    }
+
+    const response = await fetch(rpcEndpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(rpcRequest),
+    });
+
+    const data = await response.json();
+    return NextResponse.json(data);
+  } catch (e: any) {
+    console.log(e);
+    return NextResponse.json(
+      { error: e.message ?? "Erro ao chamar RPC" },
+      { status: 500 }
+    );
+  }
 }

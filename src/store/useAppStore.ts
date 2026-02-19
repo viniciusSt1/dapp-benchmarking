@@ -12,8 +12,10 @@ interface ProjectState {
 }
 
 interface BlockchainState {
-  rpcUrl: string;
-  chainId: number;
+  chainId: number | string;
+  rpcEndpoint: string;
+  wsEndpoint: string;
+  metricsEndpoint: string;
   explorerUrl: string;
 }
 
@@ -53,15 +55,17 @@ export const useAppStore = create<AppState>()(
       },
 
       blockchain: {
-        rpcUrl: "",
-        chainId: 0,
+        chainId: "",
+        rpcEndpoint: "",
+        wsEndpoint: "",
+        metricsEndpoint: "",
         explorerUrl: "",
       },
 
       contract: {
         address: "",
-        name: "",
-        solidityVersion: "",
+        name: "", // sem uso no momento, pode ser fixo ou removido depois
+        solidityVersion: "", // sem uso no momento, pode ser fixo ou removido depois
         abi: null,
       },
 
@@ -100,9 +104,10 @@ export const useAppStore = create<AppState>()(
           name: state.contract.name,
           solidityVersion: state.contract.solidityVersion,
           abi: state.contract.abi,
-          wallet: state.wallet,
         },
+        wallet: state.wallet,
       }),
+
     }
   )
 );

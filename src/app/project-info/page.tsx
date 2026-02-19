@@ -47,7 +47,7 @@ export default function ProjectInfo() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-white mb-2">Informações do Projeto</h2>
+        <h2 className="text-white mb-2">Informações do Projeto (APENAS FRONTEND AQUI, DAR UTILIDADE FUTURAMENTE)</h2>
         <p className="text-slate-400">Configure as informações básicas do seu dApp</p>
       </div>
 

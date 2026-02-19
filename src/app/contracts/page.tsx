@@ -24,15 +24,21 @@ interface ContractFunction {
   outputs?: { type: string }[];
 }
 
-export default function SmartContracts() {
+export default function SmartContracts() {  // Separar componentes depois
   const [activeTab, setActiveTab] = useState<'deploy' | 'test'>('deploy');
 
   // Deploy states
   const [contractName, setContractName] = useState('');
-  const [solidityVersion, setSolidityVersion] = useState('0.8.20');
+  const [solidityVersion, setSolidityVersion] = useState('^0.8.33'); // fixed 
   const [solFile, setSolFile] = useState<File | null>(null);
   const [isDeploying, setIsDeploying] = useState(false);
   const [deployedAddress, setDeployedAddress] = useState('');
+  const [deployResult, setDeployResult] = useState<any>(null);
+  const [contractSource, setContractSource] = useState('');
+
+  const [deployError, setDeployError] = useState<string | null>(null);
+  const [showDetails, setShowDetails] = useState(false);
+  const [evmVersion, setEvmVersion] = useState("london");
 
   // Test states
   const [contractAddress, setContractAddress] = useState('');
@@ -43,10 +49,52 @@ export default function SmartContracts() {
   const [output, setOutput] = useState<string>('');
   const [isExecuting, setIsExecuting] = useState(false);
   const [filter, setFilter] = useState<'all' | 'read' | 'write'>('all');
-  const [expandedFunctions, setExpandedFunctions] = useState<Record<string, boolean>>({});
-  const [functionInputs, setFunctionInputs] = useState<Record<string, Record<string, string>>>({});
-  const [functionOutputs, setFunctionOutputs] = useState<Record<string, string>>({});
-  const [executingFunctions, setExecutingFunctions] = useState<Record<string, boolean>>({});
+  //const [expandedFunctions, setExpandedFunctions] = useState<Record<string, boolean>>({});
+  //const [functionInputs, setFunctionInputs] = useState<Record<string, Record<string, string>>>({});
+  //const [functionOutputs, setFunctionOutputs] = useState<Record<string, string>>({});
+  //const [executingFunctions, setExecutingFunctions] = useState<Record<string, boolean>>({});
+
+  // ----------------- Deploy
+  async function handleDeploy(e: React.FormEvent) {
+    e.preventDefault();
+    setIsDeploying(true);
+    setDeployResult(null);
+    setDeployError(null);
+    setDeployedAddress('');
+
+    try {
+      const res = await fetch("/api/deploy", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contractName,
+          contractSource,
+          solidityVersion,
+          privateKey: "0x8f2a55949038a9610f50fb23b5883af3b4ecb3c3bb792cbcefbd1542c692be63", // --> Conta fe3b... -> Ajustar conexão com wallet do app depois
+          rpcEndpoint: "http://127.0.0.1:8545"
+        }),
+      });
+
+      const data = await res.json();
+      setDeployResult(data);
+
+      if (data.error || !data.address) {
+        setDeployError(data.error || "Erro desconhecido durante o deploy.");
+        toast.error("Erro ao implantar contrato.");
+      } else {
+        setDeployedAddress(data.address);
+        toast.success("Contrato implantado com sucesso!");
+      }
+
+    } catch (error) {
+      setDeployError("Falha na comunicação com o servidor.");
+      toast.error("Falha durante o deploy.");
+    }
+
+    setIsDeploying(false);
+  }
+
+  //--------------- Functions
 
   const validateAddress = (address: string) => {
     return /^0x[a-fA-F0-9]{40}$/.test(address);
@@ -60,6 +108,11 @@ export default function SmartContracts() {
         return;
       }
       setSolFile(file);
+
+      const reader = new FileReader();
+      reader.onload = () => setContractSource(String(reader.result));
+      reader.readAsText(file);
+
       toast.success('Arquivo .sol carregado com sucesso!');
     }
   };
@@ -111,25 +164,6 @@ export default function SmartContracts() {
     }
   };
 
-  const handleDeploy = () => {
-    if (!contractName.trim()) {
-      toast.error('Por favor, insira o nome do contrato');
-      return;
-    }
-    if (!solFile) {
-      toast.error('Por favor, faça upload do arquivo .sol');
-      return;
-    }
-
-    setIsDeploying(true);
-    setTimeout(() => {
-      const address = '0x' + Math.random().toString(16).slice(2, 42);
-      setDeployedAddress(address);
-      setIsDeploying(false);
-      toast.success(`Contrato implantado com sucesso em: ${address}`);
-    }, 2000);
-  };
-
   const handleVerify = () => {
     if (!contractAddress || !validateAddress(contractAddress)) {
       toast.error('Endereço de contrato inválido');
@@ -164,45 +198,10 @@ export default function SmartContracts() {
     }, 1500);
   };
 
-  const toggleFunctionExpand = (funcName: string) => {
-    setExpandedFunctions(prev => ({
-      ...prev,
-      [funcName]: !prev[funcName]
-    }));
-  };
-
-  const updateFunctionInput = (funcName: string, inputName: string, value: string) => {
-    setFunctionInputs(prev => ({
-      ...prev,
-      [funcName]: {
-        ...(prev[funcName] || {}),
-        [inputName]: value
-      }
-    }));
-  };
-
-  const executeFunctionIndividual = async (func: ContractFunction) => {
-    setExecutingFunctions(prev => ({ ...prev, [func.name]: true }));
-    setFunctionOutputs(prev => ({ ...prev, [func.name]: '' }));
-
-    setTimeout(() => {
-      if (func.type === 'read') {
-        setFunctionOutputs(prev => ({ ...prev, [func.name]: '1000000000000000000000' }));
-        toast.success(`${func.name}: Consulta executada com sucesso!`);
-      } else {
-        setFunctionOutputs(prev => ({ ...prev, [func.name]: '0x8f3e4a7b2c1d9e6f8a5b3c2d1e9f7a8b6c5d4e3f' }));
-        toast.success(`${func.name}: Transação enviada com sucesso!`);
-      }
-      setExecutingFunctions(prev => ({ ...prev, [func.name]: false }));
-    }, 1500);
-  };
-
   const filteredFunctions = filter === 'all'
     ? functions
     : functions.filter(f => f.type === filter);
 
-  const estimatedGas = selectedFunction?.type === 'write' ? '45,000' : '0';
-  const estimatedCost = selectedFunction?.type === 'write' ? '~$2.25' : 'Free';
 
   return (
     <div className="space-y-6">
@@ -217,8 +216,8 @@ export default function SmartContracts() {
           <button
             onClick={() => setActiveTab('deploy')}
             className={`flex-1 px-6 py-4 font-medium transition-colors flex items-center justify-center gap-2 ${activeTab === 'deploy'
-                ? 'text-white border-b-2 border-purple-600 bg-slate-800/50'
-                : 'text-slate-400 hover:text-white hover:bg-slate-800/30'
+              ? 'text-white border-b-2 border-purple-600 bg-slate-800/50'
+              : 'text-slate-400 hover:text-white hover:bg-slate-800/30'
               }`}
           >
             <Rocket className="w-5 h-5" />
@@ -227,8 +226,8 @@ export default function SmartContracts() {
           <button
             onClick={() => setActiveTab('test')}
             className={`flex-1 px-6 py-4 font-medium transition-colors flex items-center justify-center gap-2 ${activeTab === 'test'
-                ? 'text-white border-b-2 border-purple-600 bg-slate-800/50'
-                : 'text-slate-400 hover:text-white hover:bg-slate-800/30'
+              ? 'text-white border-b-2 border-purple-600 bg-slate-800/50'
+              : 'text-slate-400 hover:text-white hover:bg-slate-800/30'
               }`}
           >
             <Play className="w-5 h-5" />
@@ -256,8 +255,8 @@ export default function SmartContracts() {
                   <label
                     htmlFor="sol-upload"
                     className={`flex items-center justify-center gap-3 px-6 py-8 border-2 border-dashed rounded-lg cursor-pointer transition-colors ${solFile
-                        ? 'border-green-600 bg-green-600/10'
-                        : 'border-slate-700 hover:border-slate-600 bg-slate-800/50'
+                      ? 'border-green-600 bg-green-600/10'
+                      : 'border-slate-700 hover:border-slate-600 bg-slate-800/50'
                       }`}
                   >
                     {solFile ? (
@@ -300,17 +299,31 @@ export default function SmartContracts() {
                 <label className="block text-white mb-2">
                   Versão do Solidity <span className="text-red-500">*</span>
                 </label>
+
                 <select
-                  value={solidityVersion}
-                  onChange={(e) => setSolidityVersion(e.target.value)}
                   className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-purple-600"
                 >
-                  <option value="0.8.20">0.8.20</option>
-                  <option value="0.8.19">0.8.19</option>
-                  <option value="0.8.18">0.8.18</option>
-                  <option value="0.8.17">0.8.17</option>
-                  <option value="0.8.16">0.8.16</option>
-                  <option value="0.7.6">0.7.6</option>
+                  <option value="v0.8.26+commit.8a97fa7a">^0.8.33</option>
+                </select>
+
+              </div>
+
+
+              {/* EVM Version */}
+              <div>
+                <label className="block text-white mb-2">
+                  Versão da EVM <span className="text-red-500">*</span>
+                </label>
+                <select
+                  value={evmVersion}
+                  onChange={(e) => setEvmVersion(e.target.value)}
+                  className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-purple-600"
+                >
+                  <option value="shanghai">Shanghai</option>
+                  <option value="paris">Paris</option>
+                  <option value="london">London</option>
+                  <option value="berlin">Berlin</option>
+                  <option value="istanbul">Istanbul</option>
                 </select>
               </div>
 
@@ -333,22 +346,6 @@ export default function SmartContracts() {
                 </div>
               </div>
 
-              {/* Endereço após Deploy */}
-              {deployedAddress && (
-                <div className="bg-green-600/10 border border-green-600/30 rounded-lg p-4">
-                  <div className="flex items-start gap-3">
-                    <CheckCircle2 className="w-6 h-6 text-green-500 flex-shrink-0 mt-0.5" />
-                    <div className="flex-1">
-                      <p className="text-white mb-1">Contrato implantado com sucesso!</p>
-                      <p className="text-slate-400 text-sm mb-2">Endereço do contrato:</p>
-                      <div className="bg-slate-900 rounded-lg p-3 font-mono text-green-400 break-all">
-                        {deployedAddress}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
               {/* Botão Deploy */}
               <button
                 onClick={handleDeploy}
@@ -367,6 +364,63 @@ export default function SmartContracts() {
                   </>
                 )}
               </button>
+
+              {/* Resultado do Deploy */}
+              {deployError && (
+                <div className="bg-red-600/10 border border-red-600/30 rounded-lg p-4">
+                  <div className="flex items-start gap-3">
+                    <XCircle className="w-6 h-6 text-red-500 flex-shrink-0 mt-0.5" />
+                    <div className="flex-1">
+                      <p className="text-white mb-1">Erro ao implantar o contrato</p>
+                      <p className="text-red-400 text-sm mb-2">{deployError}</p>
+                      <button
+                        className="text-red-400 text-sm underline"
+                        onClick={() => setShowDetails((s) => !s)}
+                      >
+                        {showDetails ? "Ocultar detalhes" : "Mostrar detalhes"}
+                      </button>
+                    </div>
+                  </div>
+
+                  {showDetails && (
+                    <pre className="mt-4 text-xs bg-zinc-950 p-4 rounded whitespace-pre-wrap break-all border border-red-800">
+                      {JSON.stringify(deployResult, null, 2)}
+                    </pre>
+                  )}
+                </div>
+              )}
+
+              {deployedAddress && !deployError && (
+                <div className="bg-green-600/10 border border-green-600/30 rounded-lg p-4">
+                  <div className="flex items-start gap-3">
+                    <CheckCircle2 className="w-6 h-6 text-green-500 flex-shrink-0 mt-0.5" />
+                    <div className="flex-1">
+                      <p className="text-white mb-1">Contrato implantado com sucesso!</p>
+
+                      {/* Endereço do contrato */}
+                      <p className="text-slate-400 text-sm mb-2">Endereço do contrato:</p>
+                      <div className="bg-slate-900 rounded-lg p-3 font-mono text-green-400 break-all">
+                        {deployedAddress}
+                      </div>
+
+                      {/* Botão para ver detalhes */}
+                      <button
+                        className="mt-3 text-green-400 text-sm underline"
+                        onClick={() => setShowDetails((s) => !s)}
+                      >
+                        {showDetails ? "Ocultar detalhes" : "Mostrar detalhes"}
+                      </button>
+                    </div>
+                  </div>
+
+                  {showDetails && (
+                    <pre className="mt-4 text-xs bg-zinc-950 p-4 rounded whitespace-pre-wrap break-all border border-green-800">
+                      {JSON.stringify(deployResult, null, 2)}
+                    </pre>
+                  )}
+                </div>
+              )}
+
             </div>
           ) : (
             /* Test Tab Content */
@@ -379,14 +433,13 @@ export default function SmartContracts() {
                 <div className="relative">
                   <input
                     type="text"
-                    value={contractAddress}
                     onChange={(e) => setContractAddress(e.target.value)}
                     placeholder="0x..."
                     className={`w-full bg-slate-800 border rounded-lg px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:ring-2 ${contractAddress && validateAddress(contractAddress)
-                        ? 'border-green-600 focus:ring-green-600'
-                        : contractAddress
-                          ? 'border-red-600 focus:ring-red-600'
-                          : 'border-slate-700 focus:ring-purple-600'
+                      ? 'border-green-600 focus:ring-green-600'
+                      : contractAddress
+                        ? 'border-red-600 focus:ring-red-600'
+                        : 'border-slate-700 focus:ring-purple-600'
                       }`}
                   />
                   {contractAddress && (
@@ -428,7 +481,6 @@ export default function SmartContracts() {
                     <span className="text-slate-400 flex items-center">ou cole o ABI abaixo</span>
                   </div>
                   <textarea
-                    value={abiText}
                     onChange={(e) => handleAbiTextChange(e.target.value)}
                     placeholder='[{"inputs":[],"name":"totalSupply","outputs":[{"type":"uint256"}],"stateMutability":"view","type":"function"}]'
                     rows={6}
@@ -485,8 +537,8 @@ export default function SmartContracts() {
                           key={f}
                           onClick={() => setFilter(f as typeof filter)}
                           className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${filter === f
-                              ? 'bg-purple-600 text-white'
-                              : 'bg-slate-700 text-slate-400 hover:bg-slate-600'
+                            ? 'bg-purple-600 text-white'
+                            : 'bg-slate-700 text-slate-400 hover:bg-slate-600'
                             }`}
                         >
                           {f === 'all' ? 'Todas' : f === 'read' ? 'Read' : 'Write'}
@@ -503,7 +555,6 @@ export default function SmartContracts() {
                       >
                         {/* Header da Função */}
                         <button
-                          onClick={() => toggleFunctionExpand(func.name)}
                           className="w-full flex items-center justify-between p-4 hover:bg-slate-700/50 transition-colors"
                         >
                           <div className="flex items-center gap-3">
@@ -515,8 +566,8 @@ export default function SmartContracts() {
                             <div className="text-left">
                               <h4 className="text-white font-mono">{func.name}</h4>
                               <span className={`inline-block px-2 py-0.5 rounded text-xs mt-1 ${func.type === 'read'
-                                  ? 'bg-blue-600/20 text-blue-400'
-                                  : 'bg-orange-600/20 text-orange-400'
+                                ? 'bg-blue-600/20 text-blue-400'
+                                : 'bg-orange-600/20 text-orange-400'
                                 }`}>
                                 {func.type === 'read' ? 'Read Function' : 'Write Function'}
                               </span>
@@ -529,83 +580,32 @@ export default function SmartContracts() {
                                 {func.inputs.length} {func.inputs.length === 1 ? 'parâmetro' : 'parâmetros'}
                               </span>
                             )}
-                            {expandedFunctions[func.name] ? (
-                              <ChevronUp className="w-5 h-5 text-slate-400" />
-                            ) : (
-                              <ChevronDown className="w-5 h-5 text-slate-400" />
-                            )}
+                            <ChevronDown className="w-5 h-5 text-slate-400" />
                           </div>
                         </button>
 
-                        {/* Conteúdo Expandível */}
-                        {expandedFunctions[func.name] && (
-                          <div className="p-4 pt-0 space-y-4">
-                            {/* Parâmetros */}
-                            {func.inputs.length > 0 && (
-                              <div className="space-y-3">
-                                <label className="block text-slate-300 text-sm">Parâmetros de Entrada</label>
-                                {func.inputs.map((input, inputIndex) => (
-                                  <div key={inputIndex}>
-                                    <label className="block text-slate-400 mb-1.5 text-sm">
-                                      {input.name} <span className="text-purple-400">({input.type})</span>
-                                    </label>
-                                    <input
-                                      type="text"
-                                      value={functionInputs[func.name]?.[input.name] || ''}
-                                      onChange={(e) => updateFunctionInput(func.name, input.name, e.target.value)}
-                                      placeholder={`Enter ${input.type}`}
-                                      className="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-purple-600 font-mono text-sm"
-                                    />
-                                  </div>
-                                ))}
-                              </div>
-                            )}
 
-                            {/* Estimativa de Gas para Write Functions */}
-                            {func.type === 'write' && (
-                              <div className="flex items-center gap-2 p-3 bg-yellow-600/10 border border-yellow-600/30 rounded-lg">
-                                <Zap className="w-4 h-4 text-yellow-400" />
-                                <span className="text-yellow-200 text-sm">
-                                  Gas estimado: ~45,000 (~$2.25)
-                                </span>
-                              </div>
-                            )}
-
-                            {/* Botão de Execução */}
-                            <button
-                              onClick={() => executeFunctionIndividual(func)}
-                              disabled={executingFunctions[func.name]}
-                              className={`w-full px-6 py-3 rounded-lg text-white transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed ${func.type === 'read'
-                                  ? 'bg-blue-600 hover:bg-blue-700'
-                                  : 'bg-orange-600 hover:bg-orange-700'
-                                }`}
-                            >
-                              {executingFunctions[func.name] ? (
-                                <>
-                                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                                  Executando...
-                                </>
-                              ) : (
-                                <>
-                                  <Play className="w-4 h-4" />
-                                  {func.type === 'read' ? 'Query' : 'Executar Transação'}
-                                </>
-                              )}
-                            </button>
-
-                            {/* Resultado */}
-                            {functionOutputs[func.name] && (
-                              <div className="bg-slate-700/50 border border-slate-600 rounded-lg p-4">
-                                <label className="block text-slate-300 mb-2 text-sm">
-                                  {func.type === 'read' ? 'Resultado' : 'Hash da Transação'}
-                                </label>
-                                <div className="bg-slate-900 rounded-lg p-3 font-mono text-green-400 break-all text-sm">
-                                  {functionOutputs[func.name]}
-                                </div>
-                              </div>
-                            )}
+                        {/* Estimativa de Gas para Write Functions */}
+                        {func.type === 'write' && (
+                          <div className="flex items-center gap-2 p-3 bg-yellow-600/10 border border-yellow-600/30 rounded-lg">
+                            <Zap className="w-4 h-4 text-yellow-400" />
+                            <span className="text-yellow-200 text-sm">
+                              Gas estimado: ~45,000 (~$2.25)
+                            </span>
                           </div>
                         )}
+
+                        {/* Botão de Execução */}
+                        <button
+
+                          className={`w-full px-6 py-3 rounded-lg text-white transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed ${func.type === 'read'
+                            ? 'bg-blue-600 hover:bg-blue-700'
+                            : 'bg-orange-600 hover:bg-orange-700'
+                            }`}
+                        >
+                            <Play className="w-4 h-4" />
+                            {func.type === 'read' ? 'Query' : 'Executar Transação'}
+                        </button>
                       </div>
                     ))}
                   </div>
