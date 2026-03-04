@@ -67,8 +67,9 @@ export default function Dashboard() {
         ]);
 
       } catch (err) {
-        console.error("Metrics error:", err);
+        console.log("Metrics error:", err);
         setIsMetricsEndpointConnected(false);
+        clearInterval(interval); 
       }
     };
 

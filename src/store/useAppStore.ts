@@ -30,6 +30,33 @@ interface WalletState {
   address: string | null;
 }
 
+interface CaliperResults {
+  success:number;
+  failures: number;  
+  sendRate: number;
+  throughput: number;
+  latency: {
+    min: number;
+    avg: number;
+    max: number;
+  };
+}
+
+interface CaliperInputs {
+  functionName: string;
+  targetSendRate: number;
+  numTransactions: number;
+  workers: number;
+  contractAddress: string;
+}
+
+interface CaliperState {
+  status: "idle" | "running" | "finished";
+  lastBenchmarkInputs: CaliperInputs;
+  lastBenchmarkResults: CaliperResults;
+  historic: Array<{ inputs: CaliperInputs; results: CaliperResults }>;
+}
+
 /* ---------------- STORE ---------------- */
 
 interface AppState {
@@ -37,11 +64,13 @@ interface AppState {
   blockchain: BlockchainState;
   contract: ContractState;
   wallet: WalletState;
+  caliper: CaliperState;
 
   setProject: (project: Partial<ProjectState>) => void;
   setBlockchain: (blockchain: Partial<BlockchainState>) => void;
   setContract: (contract: Partial<ContractState>) => void;
   setWallet: (wallet: Partial<WalletState>) => void;
+  setCaliper: (caliper: Partial<CaliperState>) => void;
 }
 
 export const useAppStore = create<AppState>()(
@@ -73,6 +102,29 @@ export const useAppStore = create<AppState>()(
         address: null,
       },
 
+      caliper: {
+        status: "idle",
+        lastBenchmarkInputs: {
+          functionName: "",
+          targetSendRate: 0,
+          numTransactions: 0,
+          workers: 0,
+          contractAddress: "",
+        },
+        lastBenchmarkResults: {
+          success: 0,
+          failures: 0,
+          sendRate: 0,
+          throughput: 0,
+          latency: {
+            min: 0,
+            avg: 0,
+            max: 0,
+          },
+        },
+        historic: [],
+      },
+
       setProject: (project) =>
         set((state) => ({
           project: { ...state.project, ...project },
@@ -92,6 +144,11 @@ export const useAppStore = create<AppState>()(
         set((state) => ({
           wallet: { ...state.wallet, ...wallet },
         })),
+
+      setCaliper: (caliper) =>
+        set((state) => ({
+          caliper: { ...state.caliper, ...caliper },
+        })),
     }),
     {
       name: "dapp-config",
@@ -99,12 +156,7 @@ export const useAppStore = create<AppState>()(
       partialize: (state) => ({
         project: state.project,
         blockchain: state.blockchain,
-        contract: {
-          address: state.contract.address,
-          name: state.contract.name,
-          solidityVersion: state.contract.solidityVersion,
-          abi: state.contract.abi,
-        },
+        contract: state.contract,
         wallet: state.wallet,
       }),
 

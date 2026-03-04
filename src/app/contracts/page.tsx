@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Upload,
   CheckCircle2,
@@ -16,6 +16,7 @@ import {
   ChevronUp
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useAppStore } from '@/src/store/useAppStore';
 
 interface ContractFunction {
   name: string;
@@ -53,6 +54,41 @@ export default function SmartContracts() {  // Separar componentes depois
   //const [functionInputs, setFunctionInputs] = useState<Record<string, Record<string, string>>>({});
   //const [functionOutputs, setFunctionOutputs] = useState<Record<string, string>>({});
   //const [executingFunctions, setExecutingFunctions] = useState<Record<string, boolean>>({});
+  const { rpcEndpoint } = useAppStore((state) => state.blockchain);
+  const [rpcConnected, setRpcConnected] = useState(false);
+
+  // check rpcEndpoint connection
+  useEffect(() => {
+    async function checkRpcConnection() {
+      if (!rpcEndpoint) {
+        setRpcConnected(false);
+        return;
+      }
+
+      try {
+        const res = await fetch(rpcEndpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            jsonrpc: "2.0",
+            method: "eth_blockNumber",
+            params: [],
+            id: 1
+          }),
+        });
+
+        if (res.ok) {
+          setRpcConnected(true);
+          console.log("Conectado ao RPC:", rpcEndpoint);
+          return;
+        }
+        setRpcConnected(false);
+      } catch (error) {
+        setRpcConnected(false);
+      }
+    }
+    checkRpcConnection();
+  }, [rpcEndpoint]);
 
   // ----------------- Deploy
   async function handleDeploy(e: React.FormEvent) {
@@ -71,7 +107,7 @@ export default function SmartContracts() {  // Separar componentes depois
           contractSource,
           solidityVersion,
           privateKey: "0x8f2a55949038a9610f50fb23b5883af3b4ecb3c3bb792cbcefbd1542c692be63", // --> Conta fe3b... -> Ajustar conexão com wallet do app depois
-          rpcEndpoint: "http://127.0.0.1:8545"
+          rpcEndpoint
         }),
       });
 
@@ -223,6 +259,7 @@ export default function SmartContracts() {  // Separar componentes depois
             <Rocket className="w-5 h-5" />
             Deploy de Contrato
           </button>
+
           <button
             onClick={() => setActiveTab('test')}
             className={`flex-1 px-6 py-4 font-medium transition-colors flex items-center justify-center gap-2 ${activeTab === 'test'
@@ -349,7 +386,7 @@ export default function SmartContracts() {  // Separar componentes depois
               {/* Botão Deploy */}
               <button
                 onClick={handleDeploy}
-                disabled={isDeploying}
+                disabled={isDeploying || !rpcConnected}
                 className="w-full px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:from-purple-700 hover:to-blue-700 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isDeploying ? (
@@ -364,6 +401,19 @@ export default function SmartContracts() {  // Separar componentes depois
                   </>
                 )}
               </button>
+
+              {!rpcConnected && (
+              <div className="bg-red-900/30 border border-red-800 p-4 rounded-xl mb-4">
+                <p className="text-red-400 font-medium mb-3">
+                  Não foi possível conectar ao Rpc Endpoint, verifique sua url. <i>(  {rpcEndpoint}  )</i>
+                </p>
+                <a
+                  href="/blockchain"
+                  className="inline-block px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white transition-all"
+                >
+                  Configurar Endpoints
+                </a>
+              </div>) }
 
               {/* Resultado do Deploy */}
               {deployError && (

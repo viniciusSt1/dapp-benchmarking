@@ -19,7 +19,7 @@ export async function POST(req: Request) {
     });
 
   } catch (e: any) {
-    console.error("Metrics API error:", e);
+    console.log("Metrics API error:", e);
     return NextResponse.json(
       { error: e.message ?? "Erro ao buscar métricas" },
       { status: 500 }

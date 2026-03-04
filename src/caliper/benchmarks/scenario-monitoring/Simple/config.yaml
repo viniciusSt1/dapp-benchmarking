@@ -80,3 +80,7 @@ monitors:
             metrics: [Memory(avg), CPU%(avg)]
           polar:
             metrics: [all]
+    - module: prometheus
+      options:
+        interval: 5
+        url: http://localhost:9090

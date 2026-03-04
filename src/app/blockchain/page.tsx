@@ -80,6 +80,13 @@ export default function BlockchainConfig() {
         setIsConnected(true);
         return;
       }
+    } else {
+        setRpcEndpoint('');
+        setWsEndpoint('');
+        setMetricsEndpoint('');
+        setExplorerUrl('');
+
+        console.log("Erro ao conectar ao RPC:", res.statusText);
     }
 
     setIsConnected(false);
