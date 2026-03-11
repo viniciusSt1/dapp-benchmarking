@@ -14,6 +14,7 @@ interface ProjectState {
 interface BlockchainState {
   chainId: number | string;
   rpcEndpoint: string;
+  rpcEndpointConnected: boolean;
   wsEndpoint: string;
   metricsEndpoint: string;
   explorerUrl: string;
@@ -31,8 +32,8 @@ interface WalletState {
 }
 
 interface CaliperResults {
-  success:number;
-  failures: number;  
+  success: number;
+  failures: number;
   sendRate: number;
   throughput: number;
   latency: {
@@ -71,11 +72,13 @@ interface AppState {
   setContract: (contract: Partial<ContractState>) => void;
   setWallet: (wallet: Partial<WalletState>) => void;
   setCaliper: (caliper: Partial<CaliperState>) => void;
+
+  checkRpcEndpointConnection: () => Promise<void>;
 }
 
 export const useAppStore = create<AppState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       project: {
         name: "",
         description: "",
@@ -86,6 +89,7 @@ export const useAppStore = create<AppState>()(
       blockchain: {
         chainId: "",
         rpcEndpoint: "",
+        rpcEndpointConnected: false,
         wsEndpoint: "",
         metricsEndpoint: "",
         explorerUrl: "",
@@ -93,8 +97,8 @@ export const useAppStore = create<AppState>()(
 
       contract: {
         address: "",
-        name: "", // sem uso no momento, pode ser fixo ou removido depois
-        solidityVersion: "", // sem uso no momento, pode ser fixo ou removido depois
+        name: "",
+        solidityVersion: "",
         abi: null,
       },
 
@@ -116,11 +120,7 @@ export const useAppStore = create<AppState>()(
           failures: 0,
           sendRate: 0,
           throughput: 0,
-          latency: {
-            min: 0,
-            avg: 0,
-            max: 0,
-          },
+          latency: { min: 0, avg: 0, max: 0 },
         },
         historic: [],
       },
@@ -149,23 +149,59 @@ export const useAppStore = create<AppState>()(
         set((state) => ({
           caliper: { ...state.caliper, ...caliper },
         })),
+
+      checkRpcEndpointConnection: async () => {
+        const { rpcEndpoint } = get().blockchain;
+
+        if (!rpcEndpoint) {
+          set((state) => ({
+            blockchain: {
+              ...state.blockchain,
+              rpcEndpointConnected: false,
+            },
+          }));
+          return;
+        }
+
+        try {
+          const res = await fetch(rpcEndpoint, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              jsonrpc: "2.0",
+              method: "eth_blockNumber",
+              params: [],
+              id: 1,
+            }),
+          });
+
+          set((state) => ({
+            blockchain: {
+              ...state.blockchain,
+              rpcEndpointConnected: res.ok,
+            },
+          }));
+        } catch {
+          set((state) => ({
+            blockchain: {
+              ...state.blockchain,
+              rpcEndpointConnected: false,
+            },
+          }));
+        }
+      },
     }),
     {
       name: "dapp-config",
-
       partialize: (state) => ({
         project: state.project,
         blockchain: state.blockchain,
         contract: state.contract,
         wallet: state.wallet,
+        caliper: state.caliper,
       }),
-
     }
   )
 );
-
-
-// Projeto: nome, descrição, categoria, imagem e tag
-// Blockchain: URL_RPC, CHAIN_ID, BLOCK_EXPLORER_URL
-// Smart Contract: endereço, .sol, nome, versão solidity ::: useState, abi ::: zustand
-// Wallet: endereço

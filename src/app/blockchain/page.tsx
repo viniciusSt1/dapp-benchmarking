@@ -5,6 +5,9 @@ import { CheckCircle2, XCircle, RefreshCw, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { useAppStore } from '@/src/store/useAppStore';
+import { useMetricsStore } from '@/src/store/useMetricsStore';
+import Input from '@/src/components/ui/Input';
+import CardConnection from './CardConnection';
 
 /*
 const networks = [
@@ -23,6 +26,8 @@ const networks = [
 export default function BlockchainConfig() {
   const blockchain = useAppStore((state) => state.blockchain);
   const setBlockchain = useAppStore((state) => state.setBlockchain);
+  const checkRpc = useAppStore((s) => s.checkRpcEndpointConnection)
+  const isMetricsEndpointConnected = useMetricsStore((s) => s.isConnected)
 
   //const [selectedNetwork, setSelectedNetwork] = useState(blockchain.chainId ? networks.find(n => n.chainId === blockchain.chainId) || networks[0] : networks[0]);
   //const [chainId, setChainId] = useState<number | string>(blockchain.chainId ?? null);
@@ -33,7 +38,6 @@ export default function BlockchainConfig() {
   const [wsEndpoint, setWsEndpoint] = useState('');
   const [metricsEndpoint, setMetricsEndpoint] = useState('');
 
-  const [isConnected, setIsConnected] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
 
   const hasChanges =
@@ -41,7 +45,10 @@ export default function BlockchainConfig() {
     blockchain.wsEndpoint !== wsEndpoint ||
     blockchain.metricsEndpoint !== metricsEndpoint ||
     blockchain.explorerUrl !== explorerUrl;
-
+  
+  useEffect(() => {
+    checkRpc();
+  }, [blockchain.rpcEndpoint]);
 
   useEffect(() => {
     // Carregar valores do Zustand
@@ -52,45 +59,7 @@ export default function BlockchainConfig() {
     //setChainId(blockchain.chainId ?? '');
 
     console.log('DADOS ZUSTEND:', blockchain);
-
-    checkConnection();
-  }, [blockchain]);
-
-  async function checkConnection() {
-    if (!blockchain.rpcEndpoint) {
-      setIsConnected(false);
-      return;
-    }
-
-    const res = await fetch("/api/rpc", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        rpcEndpoint: blockchain.rpcEndpoint,
-        jsonrpc: "2.0",
-        id: 1,
-        method: "eth_chainId",
-        params: [],
-      }),
-    });
-
-    if (res.ok) {
-      const data = await res.json();
-      if (data.result) {
-        setIsConnected(true);
-        return;
-      }
-    } else {
-        setRpcEndpoint('');
-        setWsEndpoint('');
-        setMetricsEndpoint('');
-        setExplorerUrl('');
-
-        console.log("Erro ao conectar ao RPC:", res.statusText);
-    }
-
-    setIsConnected(false);
-  }
+  }, []);
 
   const handleConnect = async () => { // Ao pressionar botão de conectar
     setIsConnecting(true);
@@ -103,20 +72,9 @@ export default function BlockchainConfig() {
       explorerUrl: explorerUrl,
     });
 
-    console.log('useState:', {
-      rpcEndpoint,
-      wsEndpoint,
-      metricsEndpoint,
-      explorerUrl,
-    });
+    //checkRpc(); //realizado automaticamente no useEffect
 
-    console.log('Zuntend:', {
-      blockchain: blockchain,
-    });
-
-    await checkConnection();
-
-    // Simulando conexão -> implementar teste se conectou corretamente
+    // Brincadeirinha
     setTimeout(() => {
       setIsConnecting(false);
       toast.success('Conectado à rede com sucesso!');
@@ -124,10 +82,9 @@ export default function BlockchainConfig() {
   };
 
   const handleDisconnect = () => {
-    setIsConnected(false);
-
     setBlockchain({
       rpcEndpoint: '',
+      rpcEndpointConnected:false,
       wsEndpoint: '',
       metricsEndpoint: '',
       chainId: '',
@@ -190,58 +147,14 @@ export default function BlockchainConfig() {
       </div>
 
       <div className="bg-slate-900 rounded-xl border border-slate-800 p-6 space-y-6">
-        {/* Status da Conexão */}
-        <div className="flex items-center justify-between p-4 bg-slate-800/50 rounded-lg">
-          <div className="flex items-center gap-3">
-            {isConnected ? (
-              <>
-                <CheckCircle2 className="w-6 h-6 text-green-500" />
-                <div>
-                  <p className="text-white">Conectado</p>
-                </div>
-              </>
-            ) : (
-              <>
-                <XCircle className="w-6 h-6 text-slate-500" />
-                <div>
-                  <p className="text-white">Desconectado</p>
-                  <p className="text-slate-400">Aguardando conexão</p>
-                </div>
-              </>
-            )}
-          </div>
-
-          {isConnected ? (
-            <div className="flex items-center gap-2">
-
-              {hasChanges && (
-                <button
-                  onClick={handleUpdate}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  Atualizar
-                </button>
-              )}
-
-              <button
-                onClick={handleDisconnect}
-                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-              >
-                Desconectar
-              </button>
-
-            </div>
-          ) : (
-            <button
-              onClick={handleConnect}
-              disabled={isConnecting}
-              className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center gap-2 disabled:opacity-50"
-            >
-              {isConnecting && <RefreshCw className="w-4 h-4 animate-spin" />}
-              {isConnecting ? 'Conectando...' : 'Conectar'}
-            </button>
-          )}
-        </div>
+        <CardConnection
+          isConnected={blockchain.rpcEndpointConnected}
+          isConnecting={isConnecting}
+          hasChanges={hasChanges}
+          handleUpdate={handleUpdate}
+          handleDisconnect={handleDisconnect}
+          handleConnect={handleConnect}
+        ></CardConnection>
 
         {/* Chain ID 
         <div>
@@ -277,71 +190,46 @@ export default function BlockchainConfig() {
         </div>*/}
 
         {/* RPC HTTP Endpoint */}
-        <div>
-          <label className="block text-white mb-2">
-            RPC Endpoint (HTTP) <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="text"
-            value={rpcEndpoint}
-            onChange={(e) => setRpcEndpoint(e.target.value)}
-            placeholder="http://localhost:8545"
-            className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-purple-600"
-          />
-          <p className="text-slate-500 mt-1">
-            URL do nó RPC para comunicação via HTTP
-          </p>
-        </div>
+        <Input
+          label="RPC Endpoint (HTTP)"
+          value={rpcEndpoint}
+          onChange={setRpcEndpoint}
+          placeholder="http://localhost:8545"
+          description="URL do nó RPC para comunicação via HTTP"
+          required={true}
+          error={!blockchain.rpcEndpointConnected}
+        ></Input>
 
         {/* WebSocket Endpoint */}
-        <div>
-          <label className="block text-white mb-2">
-            WebSocket Endpoint (WS RPC)
-          </label>
-          <input
-            type="text"
-            value={wsEndpoint}
-            onChange={(e) => setWsEndpoint(e.target.value)}
-            placeholder="ws://localhost:8645"
-            className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-purple-600"
-          />
-          <p className="text-slate-500 mt-1">URL do WebSocket RPC do nó</p>
-        </div>
+        <Input
+          label="WebSocket Endpoint (WS RPC)"
+          value={wsEndpoint}
+          onChange={setWsEndpoint}
+          placeholder="ws://localhost:8645"
+          description="URL do WebSocket RPC do nó"
+          required={true}
+        ></Input>
 
         {/* Métricas */}
-        <div>
-          <label className="block text-white mb-2">Endpoint de Métricas</label>
-          <input
-            type="text"
-            value={metricsEndpoint}
-            onChange={(e) => setMetricsEndpoint(e.target.value)}
-            placeholder="http://localhost:9545/metrics"
-            className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-purple-600"
-          />
-          <p className="text-slate-500 mt-1">Endpoint usado para Prometheus/Grafana</p>
-        </div>
+        <Input
+          label="Endpoint de Métricas"
+          value={metricsEndpoint}
+          onChange={setMetricsEndpoint}
+          placeholder="http://localhost:9545/metrics"
+          description="Endpoint usado para Prometheus/Grafana"
+          required={true}
+          error={!isMetricsEndpointConnected}
+        ></Input>
 
         {/* Block Explorer URL */}
-        <div>
-          <label className="block text-white mb-2">Block Explorer URL</label>
-          <div className="flex gap-2">
-            <input
-              type="text"
-              value={explorerUrl}
-              onChange={(e) => setExplorerUrl(e.target.value)}
-              placeholder="https://etherscan.io"
-              className="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-purple-600"
-            />
-            <a
-              href={explorerUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="px-4 py-3 bg-slate-800 border border-slate-700 text-white rounded-lg hover:bg-slate-700 transition-colors"
-            >
-              <ExternalLink className="w-5 h-5" />
-            </a>
-          </div>
-        </div>
+        <Input
+          label="Block Explorer URL (opcional)"
+          value={explorerUrl}
+          onChange={setExplorerUrl}
+          placeholder="https://etherscan.io"
+          description="URL do explorador de blocos"
+          required={false}
+        ></Input>
 
         {/* Informações da Rede 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
