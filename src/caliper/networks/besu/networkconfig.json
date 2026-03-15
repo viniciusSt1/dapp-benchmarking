@@ -190,7 +190,7 @@
         ]
       },
       "simple": {
-        "address": "0x664D6EbAbbD5cf656eD07A509AFfBC81f9615741",
+        "address": "0x21188304dfe00C173AE29054449bfb03cdC27CeE",
         "estimateGas": true,
         "gas": {
           "open": 1000000000,

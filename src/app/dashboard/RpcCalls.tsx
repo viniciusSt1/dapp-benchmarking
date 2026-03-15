@@ -1,6 +1,7 @@
 'use client';
 
 import { Radio, Activity } from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
 
 export default function RpcCalls({ rpcEndpoint }: { rpcEndpoint: string }) {
@@ -120,12 +121,12 @@ export default function RpcCalls({ rpcEndpoint }: { rpcEndpoint: string }) {
             {hasClickedRpc && rpcError && (
                 <div className="bg-red-900/30 border border-red-800 p-4 rounded-xl mt-4">
                     <p className="text-red-400 font-medium mb-3">Não foi possível verificar o RPC Endpoint, verifique sua url</p>
-                    <a
+                    <Link
                         href="/blockchain"
                         className="inline-block px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white transition-all"
                     >
                         Configurar RPC
-                    </a>
+                    </Link>
                 </div>
             )}
 

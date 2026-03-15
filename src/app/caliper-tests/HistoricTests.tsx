@@ -1,28 +1,11 @@
 'use client';
 
-import { BarChart3, FileText } from "lucide-react";
-import { useState } from "react";
+import { BarChart3, FileText, Trash2 } from "lucide-react";
+import { useAppStore } from "@/src/store/useAppStore";
 
 export default function HistoricTests() {
-    // Histórico --> Dados sintéticos para demonstração
-    const [testHistory, setTestHistory] = useState([
-        {
-            date: "2024-02-01 14:22",
-            functionName: "transfer",
-            tps: 41.2,
-            latency: 37.1,
-            success: 96,
-            status: "completed"
-        },
-        {
-            date: "2024-02-01 13:10",
-            functionName: "query",
-            tps: 52.5,
-            latency: 22.8,
-            success: 100,
-            status: "completed"
-        }
-    ]);
+    const historico = useAppStore((state) => state.caliper.historic);
+    const removeHistoricTest = useAppStore((state) => state.removeHistoricTest);
 
     const getStatusBadge = (status: string) => {
         switch (status) {
@@ -50,6 +33,12 @@ export default function HistoricTests() {
         }
     };
 
+    const handleDelete = (index: number) => {
+        if (confirm("Deseja excluir este teste do histórico?")) {
+            removeHistoricTest(index);
+        }
+    };
+
     return (
         <div className="bg-slate-900 rounded-xl border border-slate-800 p-6">
             <div className="flex items-center gap-2 mb-4">
@@ -72,27 +61,68 @@ export default function HistoricTests() {
                     </thead>
 
                     <tbody>
-                        {testHistory.map((test, index) => (
-                            <tr
-                                key={index}
-                                className="border-b border-slate-800 hover:bg-slate-800/30 transition-colors"
-                            >
-                                <td className="py-4 text-slate-300">{test.date}</td>
-                                <td className="py-4 text-purple-400 font-semibold uppercase">{test.functionName}</td>
-                                <td className="py-4 text-white">{test.tps.toFixed(1)}</td>
-                                <td className="py-4 text-white">{test.latency.toFixed(1)}</td>
-                                <td className="py-4">{test.success}%</td>
-                                <td className="py-4">{getStatusBadge(test.status)}</td>
-                                <td className="py-4">
-                                    <button className="text-purple-400 hover:text-purple-300 transition-colors flex items-center gap-1">
-                                        <FileText className="w-4 h-4" />
-                                        Detalhes
-                                    </button>
+                        {historico.length === 0 ? (
+                            <tr>
+                                <td colSpan={7} className="py-6 text-center text-slate-500">
+                                    Nenhum teste executado ainda
                                 </td>
                             </tr>
-                        ))}
-                    </tbody>
+                        ) : (
+                            historico.map((test, index) => (
+                                <tr
+                                    key={index}
+                                    className="border-b border-slate-800 hover:bg-slate-800/30 transition-colors"
+                                >
+                                    <td className="py-4 text-slate-300">
+                                        {new Date(test.results.date).toLocaleString("pt-BR")}
+                                    </td>
 
+                                    <td className="py-4 text-purple-400 font-semibold uppercase">
+                                        {test.inputs.functionName}
+                                    </td>
+
+                                    <td className="py-4 text-white">
+                                        {test.results.sendRate}
+                                    </td>
+
+                                    <td className="py-4 text-white">
+                                        {test.results.latency.avg}
+                                    </td>
+
+                                    <td className="py-4 text-white">
+                                        {(
+                                            (test.results.success * 100) /
+                                            (test.results.success + test.results.failures)
+                                        ).toFixed(2)}
+                                        %
+                                    </td>
+
+                                    <td className="py-4">
+                                        {getStatusBadge("completed")}
+                                    </td>
+
+                                    <td className="py-4">
+                                        <div className="flex items-center gap-3">
+                                            <button className="text-purple-400 hover:text-purple-300 transition-colors flex items-center gap-1">
+                                                <FileText className="w-4 h-4" />
+                                                Detalhes
+                                            </button>
+                                        </div>
+                                    </td>
+                                    <td className="py-4">
+                                        <div className="flex items-center gap-3">
+                                            <button
+                                                className="text-red-400 hover:text-red-300 transition-colors flex items-center gap-1"
+                                                onClick={() => handleDelete(index)}
+                                            >
+                                                <Trash2 className="w-5 h-5" />
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))
+                        )}
+                    </tbody>
                 </table>
             </div>
         </div>

@@ -32,18 +32,19 @@ export default function BlockchainConfig() {
   //const [selectedNetwork, setSelectedNetwork] = useState(blockchain.chainId ? networks.find(n => n.chainId === blockchain.chainId) || networks[0] : networks[0]);
   //const [chainId, setChainId] = useState<number | string>(blockchain.chainId ?? null);
 
-  const [rpcEndpoint, setRpcEndpoint] = useState('');
-  const [explorerUrl, setExplorerUrl] = useState('');
+  const [rpcEndpoint, setRpcEndpoint] = useState<string>('');
+  const [explorerUrl, setExplorerUrl] = useState<string>('');
+  const [wsEndpoint, setWsEndpoint] = useState<string>('');
+  const [metricsEndpoint, setMetricsEndpoint] = useState<string>('');
+  const [blockTime, setBlockTime] = useState<string>('');
 
-  const [wsEndpoint, setWsEndpoint] = useState('');
-  const [metricsEndpoint, setMetricsEndpoint] = useState('');
-
-  const [isConnecting, setIsConnecting] = useState(false);
+  const [isConnecting, setIsConnecting] = useState<boolean>(false);
 
   const hasChanges =
     blockchain.rpcEndpoint !== rpcEndpoint ||
     blockchain.wsEndpoint !== wsEndpoint ||
     blockchain.metricsEndpoint !== metricsEndpoint ||
+    blockchain.blockTime !== Number(blockTime) ||
     blockchain.explorerUrl !== explorerUrl;
   
   useEffect(() => {
@@ -56,10 +57,11 @@ export default function BlockchainConfig() {
     setWsEndpoint(blockchain.wsEndpoint ?? '');
     setMetricsEndpoint(blockchain.metricsEndpoint ?? '');
     setExplorerUrl(blockchain.explorerUrl ?? '');
+    setBlockTime(blockchain.blockTime.toString() ?? '5');
     //setChainId(blockchain.chainId ?? '');
 
     console.log('DADOS ZUSTEND:', blockchain);
-  }, []);
+  }, [blockchain]);
 
   const handleConnect = async () => { // Ao pressionar botão de conectar
     setIsConnecting(true);
@@ -69,6 +71,7 @@ export default function BlockchainConfig() {
       rpcEndpoint: rpcEndpoint,
       wsEndpoint: wsEndpoint,
       metricsEndpoint: metricsEndpoint,
+      blockTime: blockTime == '' ? 5 : Number(blockTime),
       explorerUrl: explorerUrl,
     });
 
@@ -88,6 +91,7 @@ export default function BlockchainConfig() {
       wsEndpoint: '',
       metricsEndpoint: '',
       chainId: '',
+      blockTime: 5,
       explorerUrl: '',
     });
 
@@ -105,6 +109,7 @@ export default function BlockchainConfig() {
       rpcEndpoint,
       wsEndpoint,
       metricsEndpoint,
+      blockTime: blockTime == '' ? 5 : Number(blockTime),
       explorerUrl,
     });
 
@@ -219,6 +224,17 @@ export default function BlockchainConfig() {
           description="Endpoint usado para Prometheus/Grafana"
           required={true}
           error={!isMetricsEndpointConnected}
+        ></Input>
+
+        {/*Tempo em segundos a cada novo bloco */}
+        <Input 
+          label="Tempo em segundos a cada novo bloco (default: 5s)"
+          value={blockTime.toString()}
+          onChange={setBlockTime}
+          placeholder="5"
+          description="Tempo em segundos a cada novo bloco definido no genesis.json"
+          type='number'
+          //error={!isMetricsEndpointConnected}
         ></Input>
 
         {/* Block Explorer URL */}

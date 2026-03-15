@@ -43,46 +43,51 @@ export default function CaliperTesting() {
     getResultsZustend();
   }, [caliper.lastBenchmarkResults]);
 
-  /* // Mudança de lógica, api retorna os resultados
-  function pooling() {
-    return new Promise<void>((resolve) => {
-      async function check() {
-        try {
-          const response = await fetch('/api/benchmark/start', { method: 'GET' });
-          const data = await response.json();
-
-          console.log('Benchmark status:', data);
-
-          if (data.finished) {
-            resolve();
-          } else {
-            setTimeout(check, 5000); // tenta novamente
-          }
-
-        } catch (err) {
-          console.log(err);
-          resolve(); // encerra em caso de erro
-        }
-      }
-
-      check();
-    });
-  }
-  */
-
   async function getResult() {
     try {
       const response = await fetch('/api/benchmark/start', { method: 'GET' });
       const data = await response.json();
 
+      if (!data.result) throw new Error("Resultados não encontrados");
+
       console.log('Resultados do benchmark:', data);
 
-      if (data.result) {
-        setCaliper({ lastBenchmarkResults: data.result });
-      }
+      const currentState = useAppStore.getState();
+
+      setCaliper({
+        lastBenchmarkResults: data.result,
+        historic: [
+          ...currentState.caliper.historic,
+          {
+            inputs: currentState.caliper.lastBenchmarkInputs,
+            results: data.result
+          }
+        ]
+      });
+
 
     } catch (err) {
       console.log("Erro ao obter resultados:", err);
+      const currentState = useAppStore.getState();
+      const resultsError = { // TRATAR ERRO DEPOIS
+          success: 0,
+          failures: 0,
+          sendRate: 0,
+          throughput: 0,
+          latency: { min: 0, avg: 0, max: 0 },
+          date: Date.now(),
+        }
+
+      setCaliper({
+        lastBenchmarkResults: resultsError,
+        historic: [
+          ...currentState.caliper.historic,
+          {
+            inputs: currentState.caliper.lastBenchmarkInputs,
+            results: resultsError
+          }
+        ]
+      });
     }
   }
 
@@ -90,11 +95,11 @@ export default function CaliperTesting() {
     setIsRunning(true);
     setCaliper({
       lastBenchmarkInputs: {
-          functionName: selectedFunction,
-          targetSendRate,
-          numTransactions,
-          workers,
-          contractAddress: "0x1234567890abcdef1234567890abcdef12345678"
+        functionName: selectedFunction,
+        targetSendRate,
+        numTransactions,
+        workers,
+        contractAddress,
       },
     });
 
@@ -109,7 +114,7 @@ export default function CaliperTesting() {
           targetSendRate,
           numTransactions,
           workers,
-          contractAddress: "0x1234567890abcdef1234567890abcdef12345678"
+          contractAddress
         })
       });
 
@@ -139,22 +144,22 @@ export default function CaliperTesting() {
       </div>
 
       {/* STATUS DO TESTE */}
-      <CardRunning 
-        isRunning={isRunning} 
+      <CardRunning
+        isRunning={isRunning}
         setIsRunning={setIsRunning}
-        functionExecuting={functionExecuting} 
-        progress={progress} 
+        functionExecuting={functionExecuting}
+        progress={progress}
         numTransactions={numTransactions} />
 
       {/* CONFIGURAÇÃO DO TESTE */}
-      <ConfigTests 
-        selectedFunction={selectedFunction} 
-        setSelectedFunction={setSelectedFunction} 
-        targetSendRate={targetSendRate} 
-        setTargetSendRate={setTargetSendRate} 
-        numTransactions={numTransactions} 
-        setNumTransactions={setNumTransactions} 
-        workers={workers} 
+      <ConfigTests
+        selectedFunction={selectedFunction}
+        setSelectedFunction={setSelectedFunction}
+        targetSendRate={targetSendRate}
+        setTargetSendRate={setTargetSendRate}
+        numTransactions={numTransactions}
+        setNumTransactions={setNumTransactions}
+        workers={workers}
         setWorkers={setWorkers}
         contractAddress={contractAddress}
         setContractAddress={setContractAddress}

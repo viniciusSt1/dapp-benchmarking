@@ -13,11 +13,11 @@ test:
   rounds:
     - label: query
       description: Test description for the query performance of the deployed contract.
-      txNumber: *number-of-accounts
+      txNumber: 50
       rateControl:
         type: fixed-rate
         opts:
-          tps: 700
+          tps: 50
       workload:
         module: benchmarks/scenario-monitoring/Simple/query.js
         arguments: *simple-args

@@ -4,17 +4,15 @@ set -e
 
 echo "🚀 Iniciando benchmark com Hyperledger Caliper..."
 
-# Parâmetros: $1 = functionName, $2 = targetSendRate, $3 = numTransactions, $4 = workers, $5 = contractAddress
 functionName=$1
 targetSendRate=$2
 numTransactions=$3
 workers=$4
 contractAddress=$5
 
-# Depois preparar os arquivos dados os parametros
-# ...
+NETWORK_CONFIG="networks/besu/networkconfig.json"
 
-# Definir arquivo YAML com base na função
+# escolher yaml
 if [ "$functionName" = "open" ]; then
   pathConfigYaml="benchmarks/scenario-monitoring/Simple/config-open.yaml"
 elif [ "$functionName" = "query" ]; then
@@ -25,6 +23,26 @@ else
   echo "❌ Erro: função inválida: $functionName"
   exit 1
 fi
+
+echo "📄 Usando config: $pathConfigYaml"
+
+# atualizar networkconfig.json
+echo "🔧 Atualizando networkconfig.json..."
+
+tmp=$(mktemp)
+
+jq --arg addr "$contractAddress" \
+  '.ethereum.contracts.simple.address = $addr' \
+  "$NETWORK_CONFIG" > "$tmp" && mv "$tmp" "$NETWORK_CONFIG"
+
+# atualizar YAML
+echo "🔧 Atualizando parâmetros do benchmark..."
+
+sed -i "s/txNumber:.*/txNumber: $numTransactions/" $pathConfigYaml
+sed -i "s/tps:.*/tps: $targetSendRate/" $pathConfigYaml
+sed -i "/workers:/,/rounds:/ s/number:.*/number: $workers/" $pathConfigYaml
+
+echo "🚀 Executando Caliper..."
 
 npx caliper launch manager \
   --caliper-workspace ./ \

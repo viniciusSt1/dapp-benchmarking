@@ -7,12 +7,12 @@ import { useAppStore } from "@/src/store/useAppStore";
 export default function MetricsProvider({ children }: { children: React.ReactNode }) {
   const addMetric = useMetricsStore((s) => s.addMetric);
   const setConnected = useMetricsStore((s) => s.setConnected);
-  const metricsEndpoint = useAppStore((s) => s.blockchain.metricsEndpoint);
+  const {metricsEndpoint, blockTime} = useAppStore((s) => s.blockchain);
 
   useEffect(() => {
     if (!metricsEndpoint) return;
 
-    async function fetchMetrics() {
+    async function fetchMetrics() { // Atualmente rodando sempre idependente se conexão estabelecida. Para evitar tentativas inúteis mudar a lógica para rodar somente quando desejado
       try {
         const res = await fetch("/api/metrics", {
           method: "POST",
@@ -49,10 +49,10 @@ export default function MetricsProvider({ children }: { children: React.ReactNod
     }
 
     fetchMetrics();
-    const interval = setInterval(fetchMetrics, 5000);
+    const interval = setInterval(fetchMetrics, blockTime * 1000);
 
     return () => clearInterval(interval);
-  }, [metricsEndpoint]);
+  }, [metricsEndpoint, blockTime]);
 
   return <>{children}</>;
 }

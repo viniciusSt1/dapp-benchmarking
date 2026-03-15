@@ -1,3 +1,4 @@
+import { Block } from "ethers";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
@@ -17,6 +18,7 @@ interface BlockchainState {
   rpcEndpointConnected: boolean;
   wsEndpoint: string;
   metricsEndpoint: string;
+  blockTime: number;
   explorerUrl: string;
 }
 
@@ -31,7 +33,7 @@ interface WalletState {
   address: string | null;
 }
 
-interface CaliperResults {
+export interface CaliperResults {
   success: number;
   failures: number;
   sendRate: number;
@@ -41,9 +43,10 @@ interface CaliperResults {
     avg: number;
     max: number;
   };
+  date: string | number;
 }
 
-interface CaliperInputs {
+export interface CaliperInputs {
   functionName: string;
   targetSendRate: number;
   numTransactions: number;
@@ -74,6 +77,7 @@ interface AppState {
   setCaliper: (caliper: Partial<CaliperState>) => void;
 
   checkRpcEndpointConnection: () => Promise<void>;
+  removeHistoricTest: (index: number) => void;
 }
 
 export const useAppStore = create<AppState>()(
@@ -92,6 +96,7 @@ export const useAppStore = create<AppState>()(
         rpcEndpointConnected: false,
         wsEndpoint: "",
         metricsEndpoint: "",
+        blockTime: 5,
         explorerUrl: "",
       },
 
@@ -121,6 +126,7 @@ export const useAppStore = create<AppState>()(
           sendRate: 0,
           throughput: 0,
           latency: { min: 0, avg: 0, max: 0 },
+          date: Date.now(),
         },
         historic: [],
       },
@@ -130,10 +136,13 @@ export const useAppStore = create<AppState>()(
           project: { ...state.project, ...project },
         })),
 
-      setBlockchain: (blockchain) =>
-        set((state) => ({
+      setBlockchain: (blockchain) => {
+        if (blockchain.blockTime && blockchain.blockTime <= 0) blockchain.blockTime = 5;
+        blockchain.blockTime = Number(blockchain.blockTime);
+        return set((state) => ({
           blockchain: { ...state.blockchain, ...blockchain },
-        })),
+        }));
+      },
 
       setContract: (contract) =>
         set((state) => ({
@@ -192,6 +201,14 @@ export const useAppStore = create<AppState>()(
           }));
         }
       },
+      removeHistoricTest: (index) =>
+        set((state) => ({
+          caliper: {
+            ...state.caliper,
+            historic: state.caliper.historic.filter((_, i) => i !== index),
+          },
+        })),
+
     }),
     {
       name: "dapp-config",

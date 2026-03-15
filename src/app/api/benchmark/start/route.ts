@@ -68,6 +68,7 @@ export async function GET() {
     sendRate: Number(row.eq(3).text()),
     throughput: Number(row.eq(7).text()),
     latency:{min: Number(row.eq(4).text()), avg: Number(row.eq(5).text()), max: Number(row.eq(6).text())},
+    date: Date.now(),
   };
 
   return NextResponse.json({ result });

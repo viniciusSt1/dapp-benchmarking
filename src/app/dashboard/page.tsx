@@ -7,6 +7,7 @@ import { useAppStore } from '@/src/store/useAppStore';
 import RpcCalls from './RpcCalls';
 import RecentActivities from './RecentActivies';
 import { useMetricsStore } from '@/src/store/useMetricsStore';
+import Link from 'next/link';
 
 export default function Dashboard() {
   const { rpcEndpoint } = useAppStore((state) => state.blockchain);
@@ -26,12 +27,12 @@ export default function Dashboard() {
           <p className="text-red-400 font-medium mb-3">
             Não foi possível conectar ao Metrics Endpoint, verifique sua url.
           </p>
-          <a
+          <Link
             href="/blockchain"
             className="inline-block px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white transition-all"
           >
             Configurar Endpoints
-          </a>
+          </Link>
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
