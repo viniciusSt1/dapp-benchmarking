@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useAppStore } from '@/src/store/useAppStore';
+import { CaliperResults, useAppStore } from '@/src/store/useAppStore';
 
 import AboutCaliper from './AboutCaliper';
 import ConfigTests from './ConfigTests';
@@ -12,14 +12,14 @@ import CardRunning from './CardRunning';
 export default function CaliperTesting() {
   const caliper = useAppStore((state) => state.caliper);
   const setCaliper = useAppStore((state) => state.setCaliper);
+  const { wsEndpoint, rpcEndpoint } = useAppStore((state) => state.blockchain);
 
-  const [isRunning, setIsRunning] = useState(false);
-  const [selectedFunction, setSelectedFunction] = useState("open");
-  const [contractAddress, setContractAddress] = useState("");
-  const [targetSendRate, setTargetSendRate] = useState(50);
-  const [numTransactions, setNumTransactions] = useState(1000);
-  const [workers, setWorkers] = useState(1);
-  const [functionExecuting, setFunctionExecuting] = useState("");
+  const [selectedFunction, setSelectedFunction] = useState<string>("open");
+  const [contractAddress, setContractAddress] = useState<string>("");
+  const [targetSendRate, setTargetSendRate] = useState<string>("100");
+  const [numTransactions, setNumTransactions] = useState<string>("1000");
+  const [workers, setWorkers] = useState<string>("1");
+  const [functionExecuting, setFunctionExecuting] = useState<string>("");
 
   const [progress, setProgress] = useState(0);
   // Resultados do teste atual
@@ -33,7 +33,14 @@ export default function CaliperTesting() {
     async function getResultsZustend() {
       const newCaliper = useAppStore.getState().caliper;
 
-      console.log("Dados do caliper zustend:", newCaliper);
+      //console.log("Dados do caliper zustend:", newCaliper);
+
+      setSelectedFunction(newCaliper.lastBenchmarkInputs.functionName);
+      setTargetSendRate(newCaliper.lastBenchmarkInputs.targetSendRate.toString());
+      setNumTransactions(newCaliper.lastBenchmarkInputs.numTransactions.toString());
+      setWorkers(newCaliper.lastBenchmarkInputs.workers.toString());
+      setContractAddress(newCaliper.lastBenchmarkInputs.contractAddress);
+
       setResults({
         functionName: newCaliper.lastBenchmarkInputs.functionName,
         ...newCaliper.lastBenchmarkResults
@@ -43,6 +50,24 @@ export default function CaliperTesting() {
     getResultsZustend();
   }, [caliper.lastBenchmarkResults]);
 
+  async function contractExists(address: string) {
+    const res = await fetch("/api/rpc", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        rpcEndpoint: rpcEndpoint,
+        jsonrpc: "2.0",
+        method: "eth_getCode",
+        params: [address, "latest"],
+        id: 1,
+      }),
+    });
+
+    const data = await res.json();
+
+    return data.result && data.result !== "0x";
+  }
+
   async function getResult() {
     try {
       const response = await fetch('/api/benchmark/start', { method: 'GET' });
@@ -50,11 +75,12 @@ export default function CaliperTesting() {
 
       if (!data.result) throw new Error("Resultados não encontrados");
 
-      console.log('Resultados do benchmark:', data);
+      //console.log('Resultados do benchmark:', data);
 
       const currentState = useAppStore.getState();
 
       setCaliper({
+        lastBenchStatus: "finished",
         lastBenchmarkResults: data.result,
         historic: [
           ...currentState.caliper.historic,
@@ -69,16 +95,18 @@ export default function CaliperTesting() {
     } catch (err) {
       console.log("Erro ao obter resultados:", err);
       const currentState = useAppStore.getState();
-      const resultsError = { // TRATAR ERRO DEPOIS
-          success: 0,
-          failures: 0,
-          sendRate: 0,
-          throughput: 0,
-          latency: { min: 0, avg: 0, max: 0 },
-          date: Date.now(),
-        }
+      const resultsError: CaliperResults = {
+        success: 0,
+        failures: 0,
+        sendRate: 0,
+        throughput: 0,
+        latency: { min: 0, avg: 0, max: 0 },
+        date: Date.now(),
+        status: "failed",
+      }
 
       setCaliper({
+        lastBenchStatus: "finished",
         lastBenchmarkResults: resultsError,
         historic: [
           ...currentState.caliper.historic,
@@ -92,15 +120,37 @@ export default function CaliperTesting() {
   }
 
   async function startBenchmark() {
-    setIsRunning(true);
+    if (targetSendRate == '' || Number(targetSendRate) <= 0) {
+      alert("O Send Rate Alvo deve ser maior que 0");
+      return;
+    }
+
+    if (numTransactions == '' || Number(numTransactions) <= 0) {
+      alert("O número de transações deve ser maior que 0");
+      return;
+    }
+
+    if (workers == '' || Number(workers) <= 0) {
+      alert("O número de workers deve ser maior que 0");
+      return;
+    }
+
+    const exists = await contractExists(contractAddress);
+
+    if (!exists) {
+      alert("O endereço informado não possui contrato deployado na rede.");
+      return;
+    }
+
     setCaliper({
       lastBenchmarkInputs: {
         functionName: selectedFunction,
-        targetSendRate,
-        numTransactions,
-        workers,
+        targetSendRate: Number(targetSendRate),
+        numTransactions: Number(numTransactions),
+        workers: Number(workers),
         contractAddress,
       },
+      lastBenchStatus: "running",
     });
 
     setFunctionExecuting(selectedFunction);
@@ -114,7 +164,8 @@ export default function CaliperTesting() {
           targetSendRate,
           numTransactions,
           workers,
-          contractAddress
+          contractAddress,
+          wsEndpoint: wsEndpoint
         })
       });
 
@@ -129,7 +180,6 @@ export default function CaliperTesting() {
       console.log("Erro ao iniciar benchmark:", err);
 
     } finally {
-      setIsRunning(false);
       await getResult();
     }
   }
@@ -145,11 +195,10 @@ export default function CaliperTesting() {
 
       {/* STATUS DO TESTE */}
       <CardRunning
-        isRunning={isRunning}
-        setIsRunning={setIsRunning}
+        isRunning={caliper.lastBenchStatus === "running"}
         functionExecuting={functionExecuting}
         progress={progress}
-        numTransactions={numTransactions} />
+        numTransactions={Number(numTransactions)} />
 
       {/* CONFIGURAÇÃO DO TESTE */}
       <ConfigTests
@@ -164,7 +213,7 @@ export default function CaliperTesting() {
         contractAddress={contractAddress}
         setContractAddress={setContractAddress}
         startBenchmark={startBenchmark}
-        isRunning={isRunning}
+        isRunning={caliper.lastBenchStatus === "running"}
       />
 
       {/* RESULTADOS DO TESTE */}

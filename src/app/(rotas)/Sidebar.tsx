@@ -17,11 +17,11 @@ import {
 
 const menuItems = [
     { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-    { href: "/project-info", label: "Informações do Projeto", icon: Info },
+   // { href: "/project-info", label: "Informações do Projeto", icon: Info }, //IMPLEMENTAR FUTURAMENTE
     { href: "/blockchain", label: "Configuração Blockchain", icon: Network },
     { href: "/contracts", label: "Smart Contracts", icon: FileCode },
     { href: "/wallet", label: "Carteira", icon: Wallet },
-    { href: "/transactions", label: "Transações", icon: Receipt },
+   // { href: "/transactions", label: "Transações", icon: Receipt }, //IMPLEMENTAR FUTURAMENTE
     { href: "/caliper-tests", label: "Testes Caliper", icon: Activity },
 ];
 

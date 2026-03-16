@@ -15,11 +15,11 @@ test:
       description: >-
         Test description for the opening of an account through the deployed
         contract.
-      txNumber: 50
+      txNumber: 1000
       rateControl:
         type: fixed-rate
         opts:
-          tps: 50
+          tps: 100
       workload:
         module: benchmarks/scenario-monitoring/Simple/open.js
         arguments: *simple-args

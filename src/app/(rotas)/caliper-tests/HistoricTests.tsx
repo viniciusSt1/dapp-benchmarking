@@ -47,23 +47,24 @@ export default function HistoricTests() {
             </div>
 
             <div className="overflow-x-auto">
-                <table className="w-full">
+                <table className="w-full table-fixed">
                     <thead>
                         <tr className="border-b border-slate-800">
-                            <th className="text-left text-slate-400 pb-3">Data/Hora</th>
-                            <th className="text-left text-slate-400 pb-3">Função</th>
-                            <th className="text-left text-slate-400 pb-3">TPS</th>
-                            <th className="text-left text-slate-400 pb-3">Latência (ms)</th>
-                            <th className="text-left text-slate-400 pb-3">Sucesso (%)</th>
-                            <th className="text-left text-slate-400 pb-3">Status</th>
-                            <th className="text-left text-slate-400 pb-3">Ações</th>
+                            <th className="text-center text-slate-400 pb-3">Data/Hora</th>
+                            <th className="text-center text-slate-400 pb-3">Função</th>
+                            <th className="text-center text-slate-400 pb-3">Send Rate</th>
+                            <th className="text-center text-slate-400 pb-3">Throughput</th>
+                            <th className="text-center text-slate-400 pb-3">Latência (ms)</th>
+                            <th className="text-center text-slate-400 pb-3">Sucesso (%)</th>
+                            <th className="text-center text-slate-400 pb-3">Status</th>
+                            <th className="text-center text-slate-400 pb-3" colSpan={2}>Ações</th>
                         </tr>
                     </thead>
 
                     <tbody>
                         {historico.length === 0 ? (
                             <tr>
-                                <td colSpan={7} className="py-6 text-center text-slate-500">
+                                <td colSpan={8} className="py-6 text-center text-slate-500">
                                     Nenhum teste executado ainda
                                 </td>
                             </tr>
@@ -73,23 +74,27 @@ export default function HistoricTests() {
                                     key={index}
                                     className="border-b border-slate-800 hover:bg-slate-800/30 transition-colors"
                                 >
-                                    <td className="py-4 text-slate-300">
+                                    <td className="p-4 text-slate-300 text-center">
                                         {new Date(test.results.date).toLocaleString("pt-BR")}
                                     </td>
 
-                                    <td className="py-4 text-purple-400 font-semibold uppercase">
+                                    <td className="p-4 text-purple-400 font-semibold uppercase text-center">
                                         {test.inputs.functionName}
                                     </td>
 
-                                    <td className="py-4 text-white">
-                                        {test.results.sendRate}
+                                    <td className="p-4 text-white text-center">
+                                        {test.results.throughput} tx/s
                                     </td>
 
-                                    <td className="py-4 text-white">
+                                    <td className="p-4 text-white text-center">
+                                        {test.results.sendRate} tx/s
+                                    </td>
+
+                                    <td className="p-4 text-white text-center">
                                         {test.results.latency.avg}
                                     </td>
 
-                                    <td className="py-4 text-white">
+                                    <td className="p-4 text-white text-center">
                                         {(
                                             (test.results.success * 100) /
                                             (test.results.success + test.results.failures)
@@ -97,20 +102,20 @@ export default function HistoricTests() {
                                         %
                                     </td>
 
-                                    <td className="py-4">
-                                        {getStatusBadge("completed")}
+                                    <td className="p-4 text-center">
+                                        {getStatusBadge(test.results.status)}
                                     </td>
 
-                                    <td className="py-4">
-                                        <div className="flex items-center gap-3">
+                                    <td className="p-4 text-center">
+                                        <div className="flex items-center justify-center gap-3">
                                             <button className="text-purple-400 hover:text-purple-300 transition-colors flex items-center gap-1">
                                                 <FileText className="w-4 h-4" />
                                                 Detalhes
                                             </button>
                                         </div>
                                     </td>
-                                    <td className="py-4">
-                                        <div className="flex items-center gap-3">
+                                    <td className="p-4 text-center">
+                                        <div className="flex items-center justify-center gap-3">
                                             <button
                                                 className="text-red-400 hover:text-red-300 transition-colors flex items-center gap-1"
                                                 onClick={() => handleDelete(index)}

@@ -44,6 +44,7 @@ export interface CaliperResults {
     max: number;
   };
   date: string | number;
+  status: "completed" | "failed" | "running";
 }
 
 export interface CaliperInputs {
@@ -55,7 +56,7 @@ export interface CaliperInputs {
 }
 
 interface CaliperState {
-  status: "idle" | "running" | "finished";
+  lastBenchStatus: "running" | "finished";
   lastBenchmarkInputs: CaliperInputs;
   lastBenchmarkResults: CaliperResults;
   historic: Array<{ inputs: CaliperInputs; results: CaliperResults }>;
@@ -112,7 +113,7 @@ export const useAppStore = create<AppState>()(
       },
 
       caliper: {
-        status: "idle",
+        lastBenchStatus: 'finished',
         lastBenchmarkInputs: {
           functionName: "",
           targetSendRate: 0,
@@ -127,6 +128,7 @@ export const useAppStore = create<AppState>()(
           throughput: 0,
           latency: { min: 0, avg: 0, max: 0 },
           date: Date.now(),
+          status: "failed",
         },
         historic: [],
       },

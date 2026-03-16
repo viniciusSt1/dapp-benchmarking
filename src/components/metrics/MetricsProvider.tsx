@@ -10,7 +10,10 @@ export default function MetricsProvider({ children }: { children: React.ReactNod
   const {metricsEndpoint, blockTime} = useAppStore((s) => s.blockchain);
 
   useEffect(() => {
-    if (!metricsEndpoint) return;
+    if (!metricsEndpoint) {
+      setConnected(false);
+      return;
+    }
 
     async function fetchMetrics() { // Atualmente rodando sempre idependente se conexão estabelecida. Para evitar tentativas inúteis mudar a lógica para rodar somente quando desejado
       try {

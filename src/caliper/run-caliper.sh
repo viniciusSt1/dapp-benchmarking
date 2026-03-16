@@ -9,6 +9,7 @@ targetSendRate=$2
 numTransactions=$3
 workers=$4
 contractAddress=$5
+wsEndpoint=$6
 
 NETWORK_CONFIG="networks/besu/networkconfig.json"
 
@@ -33,6 +34,10 @@ tmp=$(mktemp)
 
 jq --arg addr "$contractAddress" \
   '.ethereum.contracts.simple.address = $addr' \
+  "$NETWORK_CONFIG" > "$tmp" && mv "$tmp" "$NETWORK_CONFIG"
+
+jq --arg ws "$wsEndpoint" \
+  '.ethereum.url = $ws' \
   "$NETWORK_CONFIG" > "$tmp" && mv "$tmp" "$NETWORK_CONFIG"
 
 # atualizar YAML

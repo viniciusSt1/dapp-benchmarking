@@ -211,8 +211,9 @@ export default function BlockchainConfig() {
           value={wsEndpoint}
           onChange={setWsEndpoint}
           placeholder="ws://localhost:8645"
-          description="URL do WebSocket RPC do nó"
+          description="URL do WebSocket RPC do nó utilizado para testes caliper"
           required={true}
+          error={!blockchain.wsEndpoint}
         ></Input>
 
         {/* Métricas */}

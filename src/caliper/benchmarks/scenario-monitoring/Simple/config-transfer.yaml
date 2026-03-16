@@ -13,11 +13,11 @@ test:
   rounds:
     - label: transfer
       description: Test description for transfering money between accounts.
-      txNumber: 50
+      txNumber: 1000
       rateControl:
         type: fixed-rate
         opts:
-          tps: 50
+          tps: 100
       workload:
         module: benchmarks/scenario-monitoring/Simple/transfer.js
         arguments:

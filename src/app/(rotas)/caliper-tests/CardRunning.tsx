@@ -1,9 +1,8 @@
 'use client';
 import { Activity, Square } from "lucide-react";
 
-export default function CardRunning({isRunning, setIsRunning, functionExecuting, progress, numTransactions} : {
+export default function CardRunning({isRunning, functionExecuting, progress, numTransactions} : {
     isRunning: boolean;
-    setIsRunning: (isRunning: boolean) => void;
     functionExecuting: string;
     progress: number;
     numTransactions: number;
@@ -25,7 +24,6 @@ export default function CardRunning({isRunning, setIsRunning, functionExecuting,
                     </div>
 
                     <button
-                        onClick={() => setIsRunning(false)}
                         className="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center gap-2"
                     >
                         <Square className="w-5 h-5" />

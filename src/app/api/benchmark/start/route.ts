@@ -24,7 +24,7 @@ function runScript(args: string[], cwd: string) {
 }
 
 export async function POST(req: Request) {
-  const { functionName, targetSendRate, numTransactions, workers, contractAddress } = await req.json();
+  const { functionName, targetSendRate, numTransactions, workers, contractAddress, wsEndpoint } = await req.json();
 
   const reportPath = path.resolve(process.cwd(), "src/caliper/report.html");
 
@@ -36,7 +36,7 @@ export async function POST(req: Request) {
   // run benchmark
   const caliperPath = path.resolve(process.cwd(), "src/caliper");
   try {
-    await runScript([functionName, targetSendRate.toString(), numTransactions.toString(), workers.toString(), contractAddress], caliperPath);
+    await runScript([functionName, targetSendRate.toString(), numTransactions.toString(), workers.toString(), contractAddress, wsEndpoint], caliperPath);
   } catch (err) {
     console.log("Erro ao executar benchmark:", err);
     return NextResponse.json({ finished: true, error: "Erro ao executar benchmark" });
@@ -67,8 +67,9 @@ export async function GET() {
     failures: Number(row.eq(2).text()),
     sendRate: Number(row.eq(3).text()),
     throughput: Number(row.eq(7).text()),
-    latency:{min: Number(row.eq(4).text()), avg: Number(row.eq(5).text()), max: Number(row.eq(6).text())},
+    latency:{min: Number(row.eq(5).text()), avg: Number(row.eq(6).text()), max: Number(row.eq(4).text())},
     date: Date.now(),
+    status: "completed",
   };
 
   return NextResponse.json({ result });

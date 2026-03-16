@@ -13,19 +13,19 @@ export default function ConfigTests(
         isRunning }: {
             selectedFunction: string;
             setSelectedFunction: (func: string) => void;
-            targetSendRate: number;
-            setTargetSendRate: (rate: number) => void;
-            numTransactions: number;
-            setNumTransactions: (num: number) => void;
-            workers: number;
-            setWorkers: (num: number) => void;
+            targetSendRate: string;
+            setTargetSendRate: (rate: string) => void;
+            numTransactions: string;
+            setNumTransactions: (num: string) => void;
+            workers: string;
+            setWorkers: (num: string) => void;
             contractAddress: string;
             setContractAddress: (addr: string) => void;
             startBenchmark: () => void;
             isRunning: boolean;
         }) {
     const checkRpc = useAppStore((s) => s.checkRpcEndpointConnection)
-    const { rpcEndpoint,rpcEndpointConnected } = useAppStore((state) => state.blockchain);
+    const { rpcEndpoint,rpcEndpointConnected, wsEndpoint } = useAppStore((state) => state.blockchain);
 
     useEffect(() => {
         checkRpc()
@@ -66,7 +66,7 @@ export default function ConfigTests(
                         <input
                             type="number"
                             value={targetSendRate}
-                            onChange={(e) => setTargetSendRate(Number(e.target.value))}
+                            onChange={(e) => setTargetSendRate(e.target.value)}
                             className="w-full bg-slate-800 text-white px-4 py-2 rounded-lg border border-slate-700 focus:border-purple-600 focus:outline-none"
                         />
                     </div>
@@ -76,7 +76,7 @@ export default function ConfigTests(
                         <input
                             type="number"
                             value={numTransactions}
-                            onChange={(e) => setNumTransactions(Number(e.target.value))}
+                            onChange={(e) => setNumTransactions(e.target.value)}
                             className="w-full bg-slate-800 text-white px-4 py-2 rounded-lg border border-slate-700 focus:border-purple-600 focus:outline-none"
                         />
                     </div>
@@ -86,7 +86,7 @@ export default function ConfigTests(
                         <input
                             type="number"
                             value={workers}
-                            onChange={(e) => setWorkers(Number(e.target.value))}
+                            onChange={(e) => setWorkers(e.target.value)}
                             className="w-full bg-slate-800 text-white px-4 py-2 rounded-lg border border-slate-700 focus:border-purple-600 focus:outline-none"
                         />
                     </div>
@@ -110,8 +110,8 @@ export default function ConfigTests(
                 {/* Botão iniciar */}
                 <button
                     onClick={startBenchmark}
-                    disabled={isRunning || !rpcEndpointConnected}
-                    className={`w-full py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 ${isRunning || !rpcEndpointConnected
+                    disabled={isRunning || !rpcEndpointConnected || !wsEndpoint}
+                    className={`w-full py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 ${isRunning || !rpcEndpointConnected || !wsEndpoint
                         ? "bg-slate-700 text-slate-400 cursor-not-allowed"
                         : "bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:from-purple-700 hover:to-blue-700"
                         }`}
@@ -119,10 +119,11 @@ export default function ConfigTests(
                     <Play className="w-5 h-5" />
                     {isRunning ? "Teste em Execução..." : "Iniciar Teste"}
                 </button>
-                {!rpcEndpointConnected && (
+                {(!rpcEndpointConnected || !wsEndpoint) && (
                     <div className="bg-red-900/30 border border-red-800 p-4 rounded-xl mb-4">
                         <p className="text-red-400 font-medium mb-3">
-                            Não foi possível conectar ao Rpc Endpoint, verifique sua url. <i>(  {rpcEndpoint}  )</i>
+                            Não foi possível conectar ao {!rpcEndpointConnected ? 'Rpc Endpoint' : 'Ws Endpoint'}, verifique sua url.
+                            <i> (  Rpc:{rpcEndpoint}   Ws: {wsEndpoint}  )</i>
                         </p>
                         <a
                             href="/blockchain"
