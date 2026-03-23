@@ -126,15 +126,16 @@
             <ul>
                 <h3>&nbspBasic information</h3>
                 <li>DLT: &nbsp<span style="font-weight: 500;">ethereum</span></li>
-                <li>Name: &nbsp<span style="font-weight: 500;">simple</span></li>
-                <li>Description: &nbsp<span style="font-weight: 500;">This is an example benchmark for Caliper, to test the backend DLT&#39;s performance with simple account opening &amp; querying transactions.</span></li>
-                <li>Benchmark Rounds: &nbsp<span style="font-weight: 500;">1</span></li>
+                <li>Name: &nbsp<span style="font-weight: 500;">erc721</span></li>
+                <li>Description: &nbsp<span style="font-weight: 500;">To benchmark minting and transferring tokens of an ERC721 contract.</span></li>
+                <li>Benchmark Rounds: &nbsp<span style="font-weight: 500;">2</span></li>
                 <li><a href="#benchmarkInfo">Details</a></li>
             </ul>
             <ul>
                 <h3>&nbspBenchmark results</h3>
                 <li><a href="#benchmarksummary">Summary</a></li>
-                    <li><a href="#open">open</a></li>
+                    <li><a href="#10 mints with 1tps">10 mints with 1tps</a></li>
+                    <li><a href="#10 transfers with 1tps">10 transfers with 1tps</a></li>
             </ul>
             <ul>
                 <h3>&nbspSystem under test</h3>
@@ -152,129 +153,83 @@
                     </tr>
 
                     <tr>
-                         <td>open</td> <td>1000</td> <td>0</td> <td>100.2</td> <td>21.95</td> <td>15.89</td> <td>18.95</td> <td>38.7</td>
+                         <td>10 mints with 1tps</td> <td>1000</td> <td>0</td> <td>10.0</td> <td>30.49</td> <td>0.87</td> <td>15.83</td> <td>9.0</td>
+                    </tr>
+                    <tr>
+                         <td>10 transfers with 1tps</td> <td>1000</td> <td>0</td> <td>10.0</td> <td>30.50</td> <td>0.56</td> <td>15.67</td> <td>9.2</td>
                     </tr>
                 </table>
             </div>
-            <div style="border-bottom: 1px solid #d9d9d9; padding-bottom: 10px;" id="open">
-                <h2>Benchmark round: open</h2>
-                <p>Test description for the opening of an account through the deployed contract.</p>
+            <div style="border-bottom: 1px solid #d9d9d9; padding-bottom: 10px;" id="10 mints with 1tps">
+                <h2>Benchmark round: 10 mints with 1tps</h2>
+                <p>Mint ERC721 Tokens</p>
                 <pre style="overflow: visible;white-space: pre-wrap;max-height:100%;">rateControl:
   type: fixed-rate
   opts:
-    tps: 100
+    tps: null
 </pre>
-                        <h3>Performance metrics for open</h3>
+                        <h3>Performance metrics for 10 mints with 1tps</h3>
                             <table style="min-width: 100%;">
                                 <tr>
                                      <th>Name</th> <th>Succ</th> <th>Fail</th> <th>Send Rate (TPS)</th> <th>Max Latency (s)</th> <th>Min Latency (s)</th> <th>Avg Latency (s)</th> <th>Throughput (TPS)</th>
                                 </tr>
                                 <tr>
-                                     <td>open</td> <td>1000</td> <td>0</td> <td>100.2</td> <td>21.95</td> <td>15.89</td> <td>18.95</td> <td>38.7</td>
+                                     <td>10 mints with 1tps</td> <td>1000</td> <td>0</td> <td>10.0</td> <td>30.49</td> <td>0.87</td> <td>15.83</td> <td>9.0</td>
                                 </tr>
                             </table>
-                        <h3>Resource utilization for open</h3>
-                            <h4>Resource monitor: docker</h4>
+                        <h3>Resource utilization for 10 mints with 1tps</h3>
+            </div>
+
+            <div style="border-bottom: 1px solid #d9d9d9; padding-bottom: 10px;" id="10 transfers with 1tps">
+                <h2>Benchmark round: 10 transfers with 1tps</h2>
+                <p>Transfer ERC721 Tokens</p>
+                <pre style="overflow: visible;white-space: pre-wrap;max-height:100%;">rateControl:
+  type: fixed-rate
+  opts:
+    tps: null
+</pre>
+                        <h3>Performance metrics for 10 transfers with 1tps</h3>
                             <table style="min-width: 100%;">
                                 <tr>
-                                <table>
-                                    <tr>
-                                         <th>Name</th> <th>CPU%(max)</th> <th>CPU%(avg)</th> <th>Memory(max) [GB]</th> <th>Memory(avg) [GB]</th> <th>Traffic In [B]</th> <th>Traffic Out [B]</th> <th>Disc Write [MB]</th> <th>Disc Read [B]</th>
-                                    </tr>
-                                    <tr>
-                                         <td>&#x2F;node-besu4</td> <td>0.4945833333333333</td> <td>0.09208333333333334</td> <td>0.620</td> <td>0.612</td> <td>0.00</td> <td>0.00</td> <td>0.457</td> <td>0.00</td>
-                                    </tr>
-                                    <tr>
-                                         <td>&#x2F;node-besu1</td> <td>0.30624999999999997</td> <td>0.09499999999999999</td> <td>1.38</td> <td>1.23</td> <td>0.00</td> <td>0.00</td> <td>0.0195</td> <td>0.00</td>
-                                    </tr>
-                                    <tr>
-                                         <td>&#x2F;node-besu2</td> <td>1.1716666666666666</td> <td>0.22083333333333333</td> <td>0.741</td> <td>0.571</td> <td>0.00</td> <td>0.00</td> <td>1.46</td> <td>0.00</td>
-                                    </tr>
-                                    <tr>
-                                         <td>&#x2F;node-besu3</td> <td>1.0920833333333333</td> <td>0.19999999999999998</td> <td>0.670</td> <td>0.534</td> <td>0.00</td> <td>0.00</td> <td>1.44</td> <td>0.00</td>
-                                    </tr>
-                                </table>
+                                     <th>Name</th> <th>Succ</th> <th>Fail</th> <th>Send Rate (TPS)</th> <th>Max Latency (s)</th> <th>Min Latency (s)</th> <th>Avg Latency (s)</th> <th>Throughput (TPS)</th>
+                                </tr>
+                                <tr>
+                                     <td>10 transfers with 1tps</td> <td>1000</td> <td>0</td> <td>10.0</td> <td>30.50</td> <td>0.56</td> <td>15.67</td> <td>9.2</td>
                                 </tr>
                             </table>
-                            <div class="charting">
-                                <div class="chart">
-                                    <canvas id="MonitorDocker_open_horizontalBar0">
-                                        <script>plotChart("MonitorDocker_open_horizontalBar0", "{&quot;type&quot;:&quot;horizontalBar&quot;,&quot;title&quot;:&quot;CPU%(avg)&quot;,&quot;legend&quot;:false,&quot;labels&quot;:[&quot;&#x2F;node-besu4&quot;,&quot;&#x2F;node-besu1&quot;,&quot;&#x2F;node-besu2&quot;,&quot;&#x2F;node-besu3&quot;],&quot;datasets&quot;:[{&quot;backgroundColor&quot;:[&quot;rgb(255,71,0,0.6)&quot;,&quot;rgb(179,50,0,0.6)&quot;,&quot;rgb(255,209,191,0.6)&quot;,&quot;rgb(255,163,128,0.6)&quot;],&quot;data&quot;:[0.09208333333333334,0.09499999999999999,0.22083333333333333,0.19999999999999998]}]}")</script>
-                                    </canvas>
-                                </div>
-                                <div class="chart">
-                                    <canvas id="MonitorDocker_open_horizontalBar1">
-                                        <script>plotChart("MonitorDocker_open_horizontalBar1", "{&quot;type&quot;:&quot;horizontalBar&quot;,&quot;title&quot;:&quot;Memory(avg) [GB]&quot;,&quot;legend&quot;:false,&quot;labels&quot;:[&quot;&#x2F;node-besu4&quot;,&quot;&#x2F;node-besu1&quot;,&quot;&#x2F;node-besu2&quot;,&quot;&#x2F;node-besu3&quot;],&quot;datasets&quot;:[{&quot;backgroundColor&quot;:[&quot;rgb(255,71,0,0.6)&quot;,&quot;rgb(179,50,0,0.6)&quot;,&quot;rgb(255,209,191,0.6)&quot;,&quot;rgb(255,163,128,0.6)&quot;],&quot;data&quot;:[&quot;0.612&quot;,&quot;1.23&quot;,&quot;0.571&quot;,&quot;0.534&quot;]}]}")</script>
-                                    </canvas>
-                                </div>
-                                <div class="chart">
-                                    <canvas id="MonitorDocker_open_polarArea0">
-                                        <script>plotChart("MonitorDocker_open_polarArea0", "{&quot;type&quot;:&quot;polarArea&quot;,&quot;title&quot;:&quot;CPU%(max)&quot;,&quot;legend&quot;:true,&quot;labels&quot;:[&quot;&#x2F;node-besu4&quot;,&quot;&#x2F;node-besu1&quot;,&quot;&#x2F;node-besu2&quot;,&quot;&#x2F;node-besu3&quot;],&quot;datasets&quot;:[{&quot;backgroundColor&quot;:[&quot;rgb(255,71,0,0.6)&quot;,&quot;rgb(179,50,0,0.6)&quot;,&quot;rgb(255,209,191,0.6)&quot;,&quot;rgb(255,163,128,0.6)&quot;],&quot;data&quot;:[0.4945833333333333,0.30624999999999997,1.1716666666666666,1.0920833333333333]}]}")</script>
-                                    </canvas>
-                                </div>
-                                <div class="chart">
-                                    <canvas id="MonitorDocker_open_polarArea1">
-                                        <script>plotChart("MonitorDocker_open_polarArea1", "{&quot;type&quot;:&quot;polarArea&quot;,&quot;title&quot;:&quot;CPU%(avg)&quot;,&quot;legend&quot;:true,&quot;labels&quot;:[&quot;&#x2F;node-besu4&quot;,&quot;&#x2F;node-besu1&quot;,&quot;&#x2F;node-besu2&quot;,&quot;&#x2F;node-besu3&quot;],&quot;datasets&quot;:[{&quot;backgroundColor&quot;:[&quot;rgb(255,71,0,0.6)&quot;,&quot;rgb(179,50,0,0.6)&quot;,&quot;rgb(255,209,191,0.6)&quot;,&quot;rgb(255,163,128,0.6)&quot;],&quot;data&quot;:[0.09208333333333334,0.09499999999999999,0.22083333333333333,0.19999999999999998]}]}")</script>
-                                    </canvas>
-                                </div>
-                                <div class="chart">
-                                    <canvas id="MonitorDocker_open_polarArea2">
-                                        <script>plotChart("MonitorDocker_open_polarArea2", "{&quot;type&quot;:&quot;polarArea&quot;,&quot;title&quot;:&quot;Memory(max) [GB]&quot;,&quot;legend&quot;:true,&quot;labels&quot;:[&quot;&#x2F;node-besu4&quot;,&quot;&#x2F;node-besu1&quot;,&quot;&#x2F;node-besu2&quot;,&quot;&#x2F;node-besu3&quot;],&quot;datasets&quot;:[{&quot;backgroundColor&quot;:[&quot;rgb(255,71,0,0.6)&quot;,&quot;rgb(179,50,0,0.6)&quot;,&quot;rgb(255,209,191,0.6)&quot;,&quot;rgb(255,163,128,0.6)&quot;],&quot;data&quot;:[&quot;0.620&quot;,&quot;1.38&quot;,&quot;0.741&quot;,&quot;0.670&quot;]}]}")</script>
-                                    </canvas>
-                                </div>
-                                <div class="chart">
-                                    <canvas id="MonitorDocker_open_polarArea3">
-                                        <script>plotChart("MonitorDocker_open_polarArea3", "{&quot;type&quot;:&quot;polarArea&quot;,&quot;title&quot;:&quot;Memory(avg) [GB]&quot;,&quot;legend&quot;:true,&quot;labels&quot;:[&quot;&#x2F;node-besu4&quot;,&quot;&#x2F;node-besu1&quot;,&quot;&#x2F;node-besu2&quot;,&quot;&#x2F;node-besu3&quot;],&quot;datasets&quot;:[{&quot;backgroundColor&quot;:[&quot;rgb(255,71,0,0.6)&quot;,&quot;rgb(179,50,0,0.6)&quot;,&quot;rgb(255,209,191,0.6)&quot;,&quot;rgb(255,163,128,0.6)&quot;],&quot;data&quot;:[&quot;0.612&quot;,&quot;1.23&quot;,&quot;0.571&quot;,&quot;0.534&quot;]}]}")</script>
-                                    </canvas>
-                                </div>
-                                <div class="chart">
-                                    <canvas id="MonitorDocker_open_polarArea4">
-                                        <script>plotChart("MonitorDocker_open_polarArea4", "{&quot;type&quot;:&quot;polarArea&quot;,&quot;title&quot;:&quot;Traffic In [B]&quot;,&quot;legend&quot;:true,&quot;labels&quot;:[&quot;&#x2F;node-besu4&quot;,&quot;&#x2F;node-besu1&quot;,&quot;&#x2F;node-besu2&quot;,&quot;&#x2F;node-besu3&quot;],&quot;datasets&quot;:[{&quot;backgroundColor&quot;:[&quot;rgb(255,71,0,0.6)&quot;,&quot;rgb(179,50,0,0.6)&quot;,&quot;rgb(255,209,191,0.6)&quot;,&quot;rgb(255,163,128,0.6)&quot;],&quot;data&quot;:[&quot;0.00&quot;,&quot;0.00&quot;,&quot;0.00&quot;,&quot;0.00&quot;]}]}")</script>
-                                    </canvas>
-                                </div>
-                                <div class="chart">
-                                    <canvas id="MonitorDocker_open_polarArea5">
-                                        <script>plotChart("MonitorDocker_open_polarArea5", "{&quot;type&quot;:&quot;polarArea&quot;,&quot;title&quot;:&quot;Traffic Out [B]&quot;,&quot;legend&quot;:true,&quot;labels&quot;:[&quot;&#x2F;node-besu4&quot;,&quot;&#x2F;node-besu1&quot;,&quot;&#x2F;node-besu2&quot;,&quot;&#x2F;node-besu3&quot;],&quot;datasets&quot;:[{&quot;backgroundColor&quot;:[&quot;rgb(255,71,0,0.6)&quot;,&quot;rgb(179,50,0,0.6)&quot;,&quot;rgb(255,209,191,0.6)&quot;,&quot;rgb(255,163,128,0.6)&quot;],&quot;data&quot;:[&quot;0.00&quot;,&quot;0.00&quot;,&quot;0.00&quot;,&quot;0.00&quot;]}]}")</script>
-                                    </canvas>
-                                </div>
-                                <div class="chart">
-                                    <canvas id="MonitorDocker_open_polarArea6">
-                                        <script>plotChart("MonitorDocker_open_polarArea6", "{&quot;type&quot;:&quot;polarArea&quot;,&quot;title&quot;:&quot;Disc Write [MB]&quot;,&quot;legend&quot;:true,&quot;labels&quot;:[&quot;&#x2F;node-besu4&quot;,&quot;&#x2F;node-besu1&quot;,&quot;&#x2F;node-besu2&quot;,&quot;&#x2F;node-besu3&quot;],&quot;datasets&quot;:[{&quot;backgroundColor&quot;:[&quot;rgb(255,71,0,0.6)&quot;,&quot;rgb(179,50,0,0.6)&quot;,&quot;rgb(255,209,191,0.6)&quot;,&quot;rgb(255,163,128,0.6)&quot;],&quot;data&quot;:[&quot;0.457&quot;,&quot;0.0195&quot;,&quot;1.46&quot;,&quot;1.44&quot;]}]}")</script>
-                                    </canvas>
-                                </div>
-                                <div class="chart">
-                                    <canvas id="MonitorDocker_open_polarArea7">
-                                        <script>plotChart("MonitorDocker_open_polarArea7", "{&quot;type&quot;:&quot;polarArea&quot;,&quot;title&quot;:&quot;Disc Read [B]&quot;,&quot;legend&quot;:true,&quot;labels&quot;:[&quot;&#x2F;node-besu4&quot;,&quot;&#x2F;node-besu1&quot;,&quot;&#x2F;node-besu2&quot;,&quot;&#x2F;node-besu3&quot;],&quot;datasets&quot;:[{&quot;backgroundColor&quot;:[&quot;rgb(255,71,0,0.6)&quot;,&quot;rgb(179,50,0,0.6)&quot;,&quot;rgb(255,209,191,0.6)&quot;,&quot;rgb(255,163,128,0.6)&quot;],&quot;data&quot;:[&quot;0.00&quot;,&quot;0.00&quot;,&quot;0.00&quot;,&quot;0.00&quot;]}]}")</script>
-                                    </canvas>
-                                </div>
-                            </div>
+                        <h3>Resource utilization for 10 transfers with 1tps</h3>
             </div>
 
             <div style="border-bottom: 1px solid #d9d9d9; padding-bottom: 10px;">
                 <h2>Test Environment</h2>
                 <h3>benchmark config</h3>
-                <pre id="benchmarkInfo" style="overflow: visible;white-space: pre-wrap;max-height:100%;">name: simple
-description: &gt;-
-  This is an example benchmark for Caliper, to test the backend DLT&#39;s
-  performance with simple account opening &amp; querying transactions.
+                <pre id="benchmarkInfo" style="overflow: visible;white-space: pre-wrap;max-height:100%;">name: erc721
+description: To benchmark minting and transferring tokens of an ERC721 contract.
 workers:
   number: 1
 rounds:
-  - label: open
-    description: &gt;-
-      Test description for the opening of an account through the deployed
-      contract.
+  - label: 10 mints with 1tps
+    description: Mint ERC721 Tokens
     txNumber: 1000
     rateControl:
       type: fixed-rate
       opts:
-        tps: 100
+        tps: null
     workload:
-      module: benchmarks&#x2F;scenario-monitoring&#x2F;Simple&#x2F;open.js
+      module: benchmarks&#x2F;scenario-monitoring&#x2F;ERC721&#x2F;mint.js
       arguments:
-        initialMoney: 10000
-        moneyToTransfer: 100
-        numberOfAccounts: 1000
+        tokenId: 5020
+  - label: 10 transfers with 1tps
+    description: Transfer ERC721 Tokens
+    txNumber: 1000
+    rateControl:
+      type: fixed-rate
+      opts:
+        tps: null
+    workload:
+      module: benchmarks&#x2F;scenario-monitoring&#x2F;ERC721&#x2F;transfer.js
+      arguments:
+        tokenId: 5020
 </pre>
                 <h3>SUT</h3>
                 <pre id="sutdetails">not provided</pre>

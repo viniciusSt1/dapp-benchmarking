@@ -5,11 +5,12 @@ import { compileSolidity } from "@/src/lib/blockchain/compile";
 
 export async function POST(req: Request) {
   try {
-    const { contractSource, contractName, privateKey, rpcEndpoint } = await req.json();
+    const { contractSource, contractName, privateKey, rpcEndpoint, evmVersion } = await req.json();
 
     const { abi, bytecode } = compileSolidity(
       contractSource,
       contractName,
+      evmVersion
     );
 
     console.log("Bytecode length:", bytecode.length);

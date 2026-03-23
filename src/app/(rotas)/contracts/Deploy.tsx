@@ -7,7 +7,6 @@ import { useAppStore } from '@/src/store/useAppStore';
 import Input from '@/src/components/ui/Input';
 
 export default function Deploy() {
-
     // Deploy states
     const [contractName, setContractName] = useState('');
     const [solidityVersion, setSolidityVersion] = useState('^0.8.33'); // fixed 
@@ -16,14 +15,39 @@ export default function Deploy() {
     const [deployedAddress, setDeployedAddress] = useState('');
     const [deployResult, setDeployResult] = useState<any>(null);
     const [contractSource, setContractSource] = useState('');
+    const [contracts, setContracts] = useState<any>({});
 
     const [deployError, setDeployError] = useState<string | null>(null);
     const [showDetails, setShowDetails] = useState(false);
-    const [evmVersion, setEvmVersion] = useState("london");
+    const [evmVersion, setEvmVersion] = useState<any>('shanghai');
+    const [selectedContract, setSelectedContract] = useState<string | null>(null);
 
     const { rpcEndpoint } = useAppStore((state) => state.blockchain);
     const checkRpc = useAppStore((s) => s.checkRpcEndpointConnection)
     const rpcConnected = useAppStore((s) => s.blockchain.rpcEndpointConnected)
+
+    useEffect(() => {
+        async function loadAllContracts() {
+            const files = [
+                { key: 'simple', file: 'simple.sol', description: 'Contrato simples com operações básicas de conta', displayName: 'Simple' },
+                { key: 'MyERC20', file: 'MyERC20.sol', description: 'Token ERC20 personalizado com suprimento inicial', displayName: 'ERC20' },
+                { key: 'MyERC721', file: 'MyERC721.sol', description: 'NFT ERC721 personalizado com mint automático', displayName: 'ERC721' }
+            ];
+
+            const entries = await Promise.all(
+                files.map(async ({ key, file, description, displayName }) => {
+                    const res = await fetch(`/contracts/${file}`);
+                    const source = await res.text();
+
+                    return [key, { name: key, source, description, displayName }];
+                })
+            );
+
+            setContracts(Object.fromEntries(entries));
+        }
+
+        loadAllContracts();
+    }, []);
 
     // check rpcEndpoint connection
     useEffect(() => {
@@ -46,6 +70,7 @@ export default function Deploy() {
                     contractName,
                     contractSource,
                     solidityVersion,
+                    evmVersion,
                     privateKey: "0x8f2a55949038a9610f50fb23b5883af3b4ecb3c3bb792cbcefbd1542c692be63", // --> Conta fe3b... -> Ajustar conexão com wallet do app depois
                     rpcEndpoint
                 }),
@@ -70,6 +95,18 @@ export default function Deploy() {
         setIsDeploying(false);
     }
 
+    function handleSelectContract(key: string) {
+        if (!(key in contracts)) return;
+
+        const contract = contracts[key];
+
+        setSelectedContract(key);
+        setContractName(contract.name);
+        setContractSource(contract.source);
+        setEvmVersion(contract.name == "simple" ? "shanghai" : "cancun");
+        setSolFile(null);
+    }
+
     const handleSolFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
@@ -78,6 +115,7 @@ export default function Deploy() {
                 return;
             }
             setSolFile(file);
+            setSelectedContract(null); // desmarcar contrato pré-implementado
 
             const reader = new FileReader();
             reader.onload = () => setContractSource(String(reader.result));
@@ -89,6 +127,30 @@ export default function Deploy() {
 
     return (
         <div className="space-y-6">
+            {/* Contratos Pré-implementados */}
+            <div>
+                <label className="block text-white mb-2">Contratos Pré-implementados</label>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    {Object.entries(contracts).map(([key, contract]: [string, any]) => (
+                        <div
+                            key={key}
+                            onClick={() => handleSelectContract(key)}
+                            className={`p-4 rounded-lg border cursor-pointer transition-colors duration-200
+                                        ${selectedContract === key
+                                    ? 'bg-gradient-to-br from-purple-600/20 to-blue-600/20 border-purple-500'
+                                    : 'bg-slate-800/50 border-slate-700 hover:border-slate-500 hover:bg-slate-800'
+                                }`}
+                        >
+                            <div className="flex items-center gap-3 mb-2">
+                                <FileCode className="w-5 h-5 text-slate-400" />
+                                <p className="text-white font-medium">{contract.displayName}</p>
+                            </div>
+                            <p className="text-slate-400 text-sm">{contract.description}</p>
+                        </div>
+                    ))}
+                </div>
+            </div>
+
             {/* Upload do arquivo .sol */}
             <div>
                 <label className="block text-white mb-2">
@@ -135,7 +197,8 @@ export default function Deploy() {
                 value={contractName}
                 onChange={setContractName}
                 placeholder="Ex: MyToken, NFTContract, SimpleStorage"
-                required={true} />
+                required={true}
+                disabled={!!selectedContract} />
 
             {/* Versão do Solidity */}
             <div>
@@ -160,13 +223,15 @@ export default function Deploy() {
                 <select
                     value={evmVersion}
                     onChange={(e) => setEvmVersion(e.target.value)}
-                    className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-purple-600"
+                    disabled={!!selectedContract}
+                    className={`w-full border rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-purple-600 bg-slate-800 border-slate-700
+                            ${selectedContract && 'bg-slate-800 placeholder-slate-500 focus:outline-none focus:ring-2 border-slate-700 focus:ring-purple-600 opacity-50 cursor-not-allowed'}`}
                 >
+                    <option value="cancun">Cancun</option>
                     <option value="shanghai">Shanghai</option>
                     <option value="paris">Paris</option>
                     <option value="london">London</option>
                     <option value="berlin">Berlin</option>
-                    <option value="istanbul">Istanbul</option>
                 </select>
             </div>
 

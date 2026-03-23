@@ -1,115 +1,86 @@
 'use client';
-import { Play } from "lucide-react";
-import { useEffect } from "react";
-import { useAppStore } from "@/src/store/useAppStore";
 
-export default function ConfigTests(
-    { selectedFunction, setSelectedFunction,
-        targetSendRate, setTargetSendRate,
-        numTransactions, setNumTransactions,
-        workers, setWorkers,
-        contractAddress, setContractAddress,
-        startBenchmark,
-        isRunning }: {
-            selectedFunction: string;
-            setSelectedFunction: (func: string) => void;
-            targetSendRate: string;
-            setTargetSendRate: (rate: string) => void;
-            numTransactions: string;
-            setNumTransactions: (num: string) => void;
-            workers: string;
-            setWorkers: (num: string) => void;
-            contractAddress: string;
-            setContractAddress: (addr: string) => void;
-            startBenchmark: () => void;
-            isRunning: boolean;
-        }) {
+import ConfigSimple from './ConfigSimple';
+import ConfigERC20 from './ConfigERC20';
+import ConfigERC721 from './ConfigERC721';
+import { Play } from "lucide-react";
+
+import { useState, useRef } from 'react';
+import { useAppStore } from '@/src/store/useAppStore';
+import { useEffect } from 'react';
+
+export default function ConfigTests() {
+    const [selectedContract, setSelectedContract] = useState<string>("Simple");
+
     const checkRpc = useAppStore((s) => s.checkRpcEndpointConnection)
-    const { rpcEndpoint,rpcEndpointConnected, wsEndpoint } = useAppStore((state) => state.blockchain);
+    const { rpcEndpoint, rpcEndpointConnected, wsEndpoint } = useAppStore((state) => state.blockchain);
+    const { lastBenchStatus } = useAppStore((state) => state.caliper);
+
+    const isRunning = lastBenchStatus === "running";
+
+    const simpleRef = useRef<any>(null);
+    const erc20Ref = useRef<any>(null);
+    const erc721Ref = useRef<any>(null);
 
     useEffect(() => {
         checkRpc()
     }, [])
 
+    async function contractExists(address: string) {
+        const res = await fetch("/api/rpc", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                rpcEndpoint: rpcEndpoint,
+                jsonrpc: "2.0",
+                method: "eth_getCode",
+                params: [address, "latest"],
+                id: 1,
+            }),
+        });
+
+        const data = await res.json();
+        return data.result && data.result !== "0x";
+    }
+
+    const handleStartBenchmark = () => {
+        if (selectedContract === "Simple" && simpleRef.current) {
+            simpleRef.current.startBenchmark(contractExists);
+        } else if (selectedContract === "ERC20" && erc20Ref.current) {
+            erc20Ref.current.startBenchmark(contractExists);
+        } else if (selectedContract === "ERC721" && erc721Ref.current) {
+            erc721Ref.current.startBenchmark(contractExists);
+        }
+    };
+
     return (
-        <div className="bg-slate-900 rounded-xl border border-slate-800 p-6">
-            <h3 className="text-white mb-4">Configuração do Teste</h3>
+        <div className="bg-slate-900 rounded-xl border border-slate-800">
+            {/* Tabs para seleção de contrato */}
+            <div className="flex border-b border-slate-800">
+                {["Simple", "ERC20", "ERC721"].map(contract => (
+                    <button
+                        key={contract}
+                        onClick={() => setSelectedContract(contract)}
+                        className={`flex-1 px-6 py-4 font-medium transition-colors text-center ${selectedContract === contract
+                            ? 'text-white border-b-2 border-purple-600 bg-slate-800/50'
+                            : 'text-slate-400 hover:text-white hover:bg-slate-800/30'
+                            }`}
+                    >
+                        {contract}
+                    </button>
+                ))}
+            </div>
 
-            <div className="space-y-4">
+            <div className="p-6 space-y-4">
+                <h3 className="text-white mb-4">Configuração do Teste</h3>
 
-                {/* Seleção da função */}
-                <div>
-                    <label className="text-slate-300 mb-2 block">Selecione a função</label>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                        {["open", "query", "transfer"].map(func => (
-                            <button
-                                key={func}
-                                onClick={() => setSelectedFunction(func)}
-                                className={`p-4 rounded-lg border transition-colors text-left ${selectedFunction === func
-                                    ? "bg-purple-600/20 border-purple-600 text-white"
-                                    : "bg-slate-800/50 border-slate-700 text-slate-300 hover:border-slate-600"
-                                    }`}
-                            >
-                                <h4 className="text-white capitalize">{func}</h4>
-                                <p className="text-sm text-slate-400">
-                                    Executa a função <span className="text-purple-400">{func}</span> do contrato.
-                                </p>
-                            </button>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Inputs do teste */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
-                        <label className="text-slate-300 mb-2 block">Send Rate Alvo (TPS)</label>
-                        <input
-                            type="number"
-                            value={targetSendRate}
-                            onChange={(e) => setTargetSendRate(e.target.value)}
-                            className="w-full bg-slate-800 text-white px-4 py-2 rounded-lg border border-slate-700 focus:border-purple-600 focus:outline-none"
-                        />
-                    </div>
-
-                    <div>
-                        <label className="text-slate-300 mb-2 block">Transações Totais</label>
-                        <input
-                            type="number"
-                            value={numTransactions}
-                            onChange={(e) => setNumTransactions(e.target.value)}
-                            className="w-full bg-slate-800 text-white px-4 py-2 rounded-lg border border-slate-700 focus:border-purple-600 focus:outline-none"
-                        />
-                    </div>
-
-                    <div>
-                        <label className="text-slate-300 mb-2 block">Número de Workers</label>
-                        <input
-                            type="number"
-                            value={workers}
-                            onChange={(e) => setWorkers(e.target.value)}
-                            className="w-full bg-slate-800 text-white px-4 py-2 rounded-lg border border-slate-700 focus:border-purple-600 focus:outline-none"
-                        />
-                    </div>
-                </div>
-
-                {/* Endereço do Contrato */}
-                <div className="mb-6">
-                    <label className="text-slate-300 mb-2 block">
-                        Endereço do Contrato
-                    </label>
-
-                    <input
-                        type="text"
-                        value={contractAddress}
-                        onChange={(e) => setContractAddress(e.target.value)}
-                        placeholder="0x1234...ABCD"
-                        className="w-full bg-slate-800 text-white px-4 py-2 rounded-lg border border-slate-700 focus:border-purple-600 focus:outline-none"
-                    />
-                </div>
+                {selectedContract === "Simple" && <ConfigSimple ref={simpleRef} />}
+                {selectedContract === "ERC20" && <ConfigERC20 ref={erc20Ref} />}
+                {selectedContract === "ERC721" && <ConfigERC721 ref={erc721Ref} />}
 
                 {/* Botão iniciar */}
                 <button
-                    onClick={startBenchmark}
+                    onClick={handleStartBenchmark}
                     disabled={isRunning || !rpcEndpointConnected || !wsEndpoint}
                     className={`w-full py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 ${isRunning || !rpcEndpointConnected || !wsEndpoint
                         ? "bg-slate-700 text-slate-400 cursor-not-allowed"

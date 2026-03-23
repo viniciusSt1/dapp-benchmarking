@@ -8,7 +8,8 @@ export default function Input({
   type = "text",
   description = "",
   required = false,
-  error = false
+  error = false,
+  disabled = false
 }: {
   label: string;
   value: string;
@@ -18,6 +19,7 @@ export default function Input({
   description?: string;
   required?: boolean;
   error?: boolean;
+  disabled?: boolean;
 }) {
   return (
     <div>
@@ -30,12 +32,13 @@ export default function Input({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
+        disabled={disabled}
         className={`w-full bg-slate-800 border rounded-lg px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:ring-2
 
           ${error
             ? "border-red-500 focus:ring-red-500"
             : "border-slate-700 focus:ring-purple-600"
-          }`}
+          } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
 
       />
 

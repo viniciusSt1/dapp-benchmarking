@@ -5,9 +5,18 @@ import fs from "fs";
 import { spawn } from "child_process";
 import * as cheerio from "cheerio";
 
-function runScript(args: string[], cwd: string) {
+function runScript(args: string[], cwd: string, contractName: string) {
   return new Promise((resolve, reject) => {
-    const child = spawn("./run-caliper.sh", args, {
+    var sh: string = '';
+
+    if (contractName == "simple")
+      sh = "./run-caliper-simple.sh";
+    else if (contractName == "MyERC20")
+      sh = "./run-caliper-erc20.sh";
+    else if (contractName == "MyERC721")
+      sh = "./run-caliper-erc721.sh";
+
+    const child = spawn(sh, args, {
       cwd,
       shell: false,
       detached: false,
@@ -24,7 +33,7 @@ function runScript(args: string[], cwd: string) {
 }
 
 export async function POST(req: Request) {
-  const { functionName, targetSendRate, numTransactions, workers, contractAddress, wsEndpoint } = await req.json();
+  const { contractName, functionName, targetSendRate, targetSendRateMint, targetSendRateTransfer, numTransactions, workers, contractAddress, wsEndpoint } = await req.json();
 
   const reportPath = path.resolve(process.cwd(), "src/caliper/report.html");
 
@@ -35,8 +44,19 @@ export async function POST(req: Request) {
 
   // run benchmark
   const caliperPath = path.resolve(process.cwd(), "src/caliper");
+  var args: string[] = [];
+  if (contractName == "simple")
+    args = [functionName, targetSendRate.toString(), numTransactions.toString(), workers.toString(), contractAddress, wsEndpoint];
+  else if (contractName == "MyERC20")
+    args = [functionName, targetSendRate.toString(), numTransactions.toString(), workers.toString(), contractAddress, wsEndpoint];
+  else if (contractName == "MyERC721")
+    args = [functionName, targetSendRateMint.toString(), targetSendRateTransfer.toString(), numTransactions.toString(), workers.toString(), contractAddress, wsEndpoint];
+  else
+    return NextResponse.json({ finished: true, error: "É necessário informar o nome do contrato (simple, MyERC20 ou MyERC721)" });
+
   try {
-    await runScript([functionName, targetSendRate.toString(), numTransactions.toString(), workers.toString(), contractAddress, wsEndpoint], caliperPath);
+    console.log("Executando script:", args);
+    await runScript(args, caliperPath, contractName);
   } catch (err) {
     console.log("Erro ao executar benchmark:", err);
     return NextResponse.json({ finished: true, error: "Erro ao executar benchmark" });
@@ -67,7 +87,7 @@ export async function GET() {
     failures: Number(row.eq(2).text()),
     sendRate: Number(row.eq(3).text()),
     throughput: Number(row.eq(7).text()),
-    latency:{min: Number(row.eq(5).text()), avg: Number(row.eq(6).text()), max: Number(row.eq(4).text())},
+    latency: { min: Number(row.eq(5).text()), avg: Number(row.eq(6).text()), max: Number(row.eq(4).text()) },
     date: Date.now(),
     status: "completed",
   };

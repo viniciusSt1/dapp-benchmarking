@@ -3,9 +3,9 @@
 const Dictionary = 'abcdefghijklmnopqrstuvwxyz';
 
 class SimpleState {
-    constructor(workerIndex, tokenId = 101, accounts = 0) {
+    constructor(workerIndex, tokenIdStart = 101, accounts = 0) {
         this.accountsGenerated = accounts;
-        this.tokenId = tokenId;
+        this.tokenIdStart = tokenIdStart;
         this.accountPrefix = this._get26Num(workerIndex);
     }
 
@@ -22,20 +22,22 @@ class SimpleState {
 
     getTransferArguments() {
         const args = {
-            from: "0xD1cf9D73a91DE6630c2bb068Ba5fDdF9F0DEac09",
+            from: "0xfe3b557e8fb62b89f4916b721be55ceb828dbd73", // conta do usuario
             to: "0xf17f52151EbEF6C7334FAD080c5704D77216b732",
-            tokenId: this.tokenId
+            tokenId: this.tokenIdStart
         };
-        this.tokenId++;
+        console.log("transferindo", this.tokenIdStart);
+        this.tokenIdStart++;
         return args;
     }
 
     getMintArguments() {
         const args = {
-            to: "0xD1cf9D73a91DE6630c2bb068Ba5fDdF9F0DEac09",
-            tokenId: this.tokenId
+            to: "0xfe3b557e8fb62b89f4916b721be55ceb828dbd73",
+            tokenId: this.tokenIdStart
         };
-        this.tokenId++;
+        console.log("mintando", this.tokenIdStart);
+        this.tokenIdStart++;
         return args;
     }
 }

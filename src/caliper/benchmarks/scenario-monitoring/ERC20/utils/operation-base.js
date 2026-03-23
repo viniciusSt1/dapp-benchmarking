@@ -4,6 +4,9 @@ const { WorkloadModuleBase } = require('@hyperledger/caliper-core');
 
 const SupportedConnectors = ['ethereum'];
 
+/**
+ * Base class for simple operations.
+ */
 class OperationBase extends WorkloadModuleBase {
     constructor() {
         super();
@@ -13,8 +16,8 @@ class OperationBase extends WorkloadModuleBase {
         await super.initializeWorkloadModule(workerIndex, totalWorkers, roundIndex, roundArguments, sutAdapter, sutContext);
 
         this.assertConnectorType();
-        this.assertSetting('tokenId');
-        this.tokenId = this.roundArguments.tokenId;
+        this.assertSetting('moneyToTransfer');
+        this.moneyToTransfer = this.roundArguments.moneyToTransfer;
         this.simpleState = this.createSimpleState();
     }
 
@@ -46,7 +49,7 @@ class OperationBase extends WorkloadModuleBase {
 
     _createEthereumConnectorRequest(operation, args) {
         return {
-            contract: 'MyERC721',
+            contract: 'MyERC20',
             verb: operation,
             args: Object.keys(args).map(k => args[k]),
             readOnly: false

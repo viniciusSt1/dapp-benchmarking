@@ -51,7 +51,7 @@ export default function HistoricTests() {
                     <thead>
                         <tr className="border-b border-slate-800">
                             <th className="text-center text-slate-400 pb-3">Data/Hora</th>
-                            <th className="text-center text-slate-400 pb-3">Função</th>
+                            <th className="text-center text-slate-400 pb-3">Contrato/Função</th>
                             <th className="text-center text-slate-400 pb-3">Send Rate</th>
                             <th className="text-center text-slate-400 pb-3">Throughput</th>
                             <th className="text-center text-slate-400 pb-3">Latência (ms)</th>
@@ -78,8 +78,9 @@ export default function HistoricTests() {
                                         {new Date(test.results.date).toLocaleString("pt-BR")}
                                     </td>
 
-                                    <td className="p-4 text-purple-400 font-semibold uppercase text-center">
-                                        {test.inputs.functionName}
+                                    <td className="p-4 text-center">
+                                        <div className="text-purple-400 font-semibold uppercase">{test.inputs.contractName} /</div>
+                                        <div className="text-blue-400 font-semibold uppercase text-[15px]">{test.inputs.functionName}</div>
                                     </td>
 
                                     <td className="p-4 text-white text-center">

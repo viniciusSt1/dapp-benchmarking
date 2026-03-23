@@ -48,6 +48,7 @@ export interface CaliperResults {
 }
 
 export interface CaliperInputs {
+  contractName: string;
   functionName: string;
   targetSendRate: number;
   numTransactions: number;
@@ -115,6 +116,7 @@ export const useAppStore = create<AppState>()(
       caliper: {
         lastBenchStatus: 'finished',
         lastBenchmarkInputs: {
+          contractName: "",
           functionName: "",
           targetSendRate: 0,
           numTransactions: 0,
