@@ -1,5 +1,5 @@
 simpleArgs:
-  tokenId: &tokenId 5020  #ATUALIZAR PARA CADA EXECUÇÃO
+  tokenId: &tokenId 1774419563777
 
   txNumberMint: &txNumberMint 10
   txNumberTransfer: &txNumberTransfer 10
@@ -16,9 +16,9 @@ test:
     number: 1
 
   rounds:
-    - label: 10 mints with 1tps
+    - label: Mint
       description: Mint ERC721 Tokens
-      txNumber: 1000
+      txNumber: 300
       rateControl:
         type: fixed-rate
         opts:
@@ -28,9 +28,9 @@ test:
         arguments:
           tokenId: *tokenId  
 
-    - label: 10 transfers with 1tps
+    - label: Transferfrom
       description: Transfer ERC721 Tokens
-      txNumber: 1000
+      txNumber: 300
       rateControl:
         type: fixed-rate
         opts:

@@ -1,11 +1,14 @@
 'use client';
 
-import { BarChart3, FileText, Trash2 } from "lucide-react";
+import { BarChart3, FileText, Trash2, X } from "lucide-react";
+import { useState } from "react";
 import { useAppStore } from "@/src/store/useAppStore";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/src/components/ui/dialog";
 
 export default function HistoricTests() {
     const historico = useAppStore((state) => state.caliper.historic);
     const removeHistoricTest = useAppStore((state) => state.removeHistoricTest);
+    const [selectedTest, setSelectedTest] = useState<{ inputs: any; results: any } | null>(null);
 
     const getStatusBadge = (status: string) => {
         switch (status) {
@@ -69,7 +72,7 @@ export default function HistoricTests() {
                                 </td>
                             </tr>
                         ) : (
-                            historico.map((test, index) => (
+                            [...historico].reverse().map((test, index) => (
                                 <tr
                                     key={index}
                                     className="border-b border-slate-800 hover:bg-slate-800/30 transition-colors"
@@ -109,7 +112,10 @@ export default function HistoricTests() {
 
                                     <td className="p-4 text-center">
                                         <div className="flex items-center justify-center gap-3">
-                                            <button className="text-purple-400 hover:text-purple-300 transition-colors flex items-center gap-1">
+                                            <button
+                                                className="text-purple-400 hover:text-purple-300 transition-colors flex items-center gap-1"
+                                                onClick={() => setSelectedTest(test)}
+                                            >
                                                 <FileText className="w-4 h-4" />
                                                 Detalhes
                                             </button>
@@ -131,6 +137,85 @@ export default function HistoricTests() {
                     </tbody>
                 </table>
             </div>
+            <Dialog open={!!selectedTest} onOpenChange={() => setSelectedTest(null)}>
+                <DialogContent className="bg-slate-900 border border-slate-800 text-white !max-w-4xl !w-full !p-12">
+
+                    <DialogHeader>
+                        <DialogTitle className="text-lg font-semibold">
+                            Detalhes do Benchmark
+                        </DialogTitle>
+                    </DialogHeader>
+
+                    {selectedTest && (
+                        <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] mt-4">
+
+                            {/* INPUTS */}
+                            <div>
+                                <h3 className="text-purple-400 font-semibold mb-4">Inputs</h3>
+
+                                <div className="grid grid-cols-[140px_1fr] gap-y-3 text-sm">
+                                    <span className="text-slate-400">Contrato</span>
+                                    <span className="text-white">{selectedTest.inputs.contractName}</span>
+
+                                    <span className="text-slate-400">Função</span>
+                                    <span className="text-white">{selectedTest.inputs.functionName}</span>
+
+                                    <span className="text-slate-400">Send Rate</span>
+                                    <span className="text-white">{selectedTest.inputs.targetSendRate}</span>
+
+                                    <span className="text-slate-400">Transações</span>
+                                    <span className="text-white">{selectedTest.inputs.numTransactions}</span>
+
+                                    <span className="text-slate-400">Workers</span>
+                                    <span className="text-white">{selectedTest.inputs.workers}</span>
+
+                                    <span className="text-slate-400">Address</span>
+                                    <span className="text-white break-all">
+                                        {selectedTest.inputs.contractAddress}
+                                    </span>
+                                </div>
+                            </div>
+
+                            {/* RESULTS */}
+                            <div>
+                                <h3 className="text-blue-400 font-semibold mb-4">Resultados</h3>
+
+                                <div className="grid grid-cols-[140px_1fr] gap-y-3 text-sm">
+                                    <span className="text-slate-400">Status</span>
+                                    <span>{getStatusBadge(selectedTest.results.status)}</span>
+
+                                    <span className="text-slate-400">Throughput</span>
+                                    <span className="text-white">
+                                        {selectedTest.results.throughput} tx/s
+                                    </span>
+
+                                    <span className="text-slate-400">Send Rate Atingido</span>
+                                    <span className="text-white">
+                                        {selectedTest.results.sendRate} tx/s
+                                    </span>
+
+                                    <span className="text-slate-400">Latência Avg</span>
+                                    <span className="text-white">
+                                        {selectedTest.results.latency.avg}
+                                    </span>
+
+                                    <span className="text-slate-400">Latência Min</span>
+                                    <span className="text-white">
+                                        {selectedTest.results.latency.min}
+                                    </span>
+
+                                    <span className="text-slate-400">Latência Max</span>
+                                    <span className="text-white">
+                                        {selectedTest.results.latency.max}
+                                    </span>
+                                </div>
+                            </div>
+
+                        </div>
+                    )}
+                </DialogContent>
+            </Dialog>
         </div>
+
     );
 }

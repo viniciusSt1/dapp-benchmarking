@@ -28,16 +28,38 @@ export default function ResultTestes({ results }: {
     );
   }, [results.date]);
 
+  const handleDownload = async () => {
+    const res = await fetch("/api/benchmark/report");
+
+    if (!res.ok) {
+      alert("Erro ao baixar relatório");
+      return;
+    }
+
+    const blob = await res.blob();
+    const url = window.URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "report.html";
+    a.click();
+
+    window.URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="bg-slate-900 rounded-xl border border-slate-800 p-6">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-white">
           Resultados do Último Teste —
           <span className="text-purple-400 ml-2 uppercase">{results.functionName}</span>
-          <span className="text-slate-400"> ({formattedDate})</span> 
+          <span className="text-slate-400"> ({formattedDate})</span>
         </h3>
 
-        <button className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center gap-2">
+        <button
+          onClick={handleDownload}
+          className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center gap-2"
+        >
           <Download className="w-4 h-4" />
           Exportar Relatório
         </button>

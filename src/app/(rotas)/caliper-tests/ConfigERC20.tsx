@@ -24,7 +24,7 @@ const ConfigERC20 = forwardRef((props, ref) => {
 
     async function getResult() {
         try {
-            const response = await fetch('/api/benchmark/start', { method: 'GET' });
+            const response = await fetch('/api/benchmark/finish/ERC20', { method: 'GET' });
             const data = await response.json();
 
             if (!data.result) throw new Error("Resultados não encontrados");

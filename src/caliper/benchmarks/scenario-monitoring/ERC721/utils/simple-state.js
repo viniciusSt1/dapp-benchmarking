@@ -26,7 +26,7 @@ class SimpleState {
             to: "0xf17f52151EbEF6C7334FAD080c5704D77216b732",
             tokenId: this.tokenIdStart
         };
-        console.log("transferindo", this.tokenIdStart);
+        //console.log("transferindo", this.tokenIdStart);
         this.tokenIdStart++;
         return args;
     }
@@ -36,7 +36,7 @@ class SimpleState {
             to: "0xfe3b557e8fb62b89f4916b721be55ceb828dbd73",
             tokenId: this.tokenIdStart
         };
-        console.log("mintando", this.tokenIdStart);
+        //console.log("mintando", this.tokenIdStart);
         this.tokenIdStart++;
         return args;
     }

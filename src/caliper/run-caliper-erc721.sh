@@ -12,6 +12,8 @@ workers=$5
 contractAddress=$6
 wsEndpoint=$7
 
+tokenId=$(date +%s%3N)
+
 NETWORK_CONFIG="networks/besu/networkconfig.json"
 
 pathConfigYaml="benchmarks/scenario-monitoring/ERC721/config.yaml"
@@ -37,6 +39,7 @@ echo "🔧 Atualizando parâmetros do benchmark..."
 sed -i "s/txNumber:.*/txNumber: $numTransactions/" $pathConfigYaml
 sed -i "s/tps:.*/tps: $targetSendRate/" $pathConfigYaml
 sed -i "/workers:/,/rounds:/ s/number:.*/number: $workers/" $pathConfigYaml
+sed -i "s/tokenId: &tokenId .*/tokenId: \&tokenId $tokenId/" $pathConfigYaml
 
 echo "🚀 Executando Caliper..."
 

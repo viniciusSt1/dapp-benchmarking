@@ -2,6 +2,7 @@
 
 import { useEffect, useState, forwardRef, useImperativeHandle } from "react";
 import { useAppStore } from "@/src/store/useAppStore";
+import { CaliperResults } from "@/src/store/useAppStore";
 
 const ConfigERC721 = forwardRef((props, ref) => {
     const [targetSendRateTransfer, setTargetSendRateTransfer] = useState<string>("10");
@@ -15,9 +16,19 @@ const ConfigERC721 = forwardRef((props, ref) => {
 
     const { lastBenchmarkInputs } = useAppStore((state) => state.caliper);
 
-    async function getResult() {    // AJUSTAR PARA ERC721
+    useEffect(() => {
+        if (lastBenchmarkInputs.contractName == "ERC721") {
+            setTargetSendRateMint(lastBenchmarkInputs.targetSendRate.toString());
+            setTargetSendRateTransfer(lastBenchmarkInputs.targetSendRate.toString());
+            setNumTransactions(lastBenchmarkInputs.numTransactions.toString());
+            setWorkers(lastBenchmarkInputs.workers.toString());
+            setContractAddress(lastBenchmarkInputs.contractAddress);
+        }
+    }, [lastBenchmarkInputs]);
+
+    async function getResult(inputsMint: any, inputsTransfer: any) {    // AJUSTAR PARA ERC721
         try {
-            const response = await fetch('/api/benchmark/start', { method: 'GET' });
+            const response = await fetch('/api/benchmark/finish/ERC721', { method: 'GET' });
             const data = await response.json();
 
             if (!data.result) throw new Error("Resultados não encontrados");
@@ -25,18 +36,33 @@ const ConfigERC721 = forwardRef((props, ref) => {
             const currentState = useAppStore.getState();
             setCaliper({
                 lastBenchStatus: "finished",
-                lastBenchmarkResults: data.result,
+                lastBenchmarkResults: data.result.transferfrom,
                 historic: [
                     ...currentState.caliper.historic,
                     {
-                        inputs: currentState.caliper.lastBenchmarkInputs,
-                        results: data.result
+                        inputs: inputsMint,
+                        results: data.result.mint
+                    },
+                    {
+                        inputs: inputsTransfer,
+                        results: data.result.transferfrom
                     }
                 ]
             });
         } catch (err) {
             console.log("Erro ao obter resultados:", err);
             const currentState = useAppStore.getState();
+
+            const failedResults : CaliperResults = {
+                success: 0,
+                failures: 0,
+                sendRate: 0,
+                throughput: 0,
+                latency: { min: 0, avg: 0, max: 0 },
+                date: Date.now(),
+                status: "failed",
+            }
+
             setCaliper({
                 lastBenchStatus: "finished",
                 lastBenchmarkResults: {
@@ -51,17 +77,13 @@ const ConfigERC721 = forwardRef((props, ref) => {
                 historic: [
                     ...currentState.caliper.historic,
                     {
-                        inputs: currentState.caliper.lastBenchmarkInputs,
-                        results: {
-                            success: 0,
-                            failures: 0,
-                            sendRate: 0,
-                            throughput: 0,
-                            latency: { min: 0, avg: 0, max: 0 },
-                            date: Date.now(),
-                            status: "failed",
-                        }
-                    }
+                        inputs: inputsMint,
+                        results: failedResults
+                    },
+                    {
+                        inputs: inputsTransfer,
+                        results: failedResults
+                    },
                 ]
             });
         }
@@ -94,15 +116,26 @@ const ConfigERC721 = forwardRef((props, ref) => {
             return;
         }
 
+        const inputsMint = {
+            contractName: "ERC721",
+            functionName: "mint",
+            targetSendRate: Number(targetSendRateMint),
+            numTransactions: Number(numTransactions),
+            workers: Number(workers),
+            contractAddress,
+        }
+
+        const inputsTransfer = {
+            contractName: "ERC721",
+            functionName: "transferFrom",
+            targetSendRate: Number(targetSendRateTransfer),
+            numTransactions: Number(numTransactions),
+            workers: Number(workers),
+            contractAddress,
+        }
+
         setCaliper({
-            lastBenchmarkInputs: {
-                contractName: "ERC721",
-                functionName: "transferFrom,mint",
-                targetSendRate: Number(targetSendRateTransfer),
-                numTransactions: Number(numTransactions),
-                workers: Number(workers),
-                contractAddress,
-            },
+            lastBenchmarkInputs: inputsTransfer,
             lastBenchStatus: "running",
         });
 
@@ -131,7 +164,7 @@ const ConfigERC721 = forwardRef((props, ref) => {
         } catch (err) {
             console.log("Erro ao iniciar benchmark:", err);
         } finally {
-            await getResult();
+            await getResult(inputsMint, inputsTransfer);
         }
     }
 

@@ -190,7 +190,7 @@
         ]
       },
       "simple": {
-        "address": "0x31968C5a9fd2b4D02212b6BFd8c914E228F57F98",
+        "address": "0x8B4DE181F4Dc963A8f091EA8be4be743fdb12E81",
         "estimateGas": true,
         "gas": {
           "open": 1000000000,
@@ -261,7 +261,7 @@
         ]
       },
       "MyERC721": {
-        "address": "0x485E77FB68AB07a4D8385A3753356a5E389307B4",
+        "address": "0xeF05C2b34155Fd8dDbc13beea926F12f827850ED",
         "estimateGas": true,
         "gas": {
           "mint": 1000000000,
