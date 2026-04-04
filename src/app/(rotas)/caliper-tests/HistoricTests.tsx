@@ -87,11 +87,11 @@ export default function HistoricTests() {
                                     </td>
 
                                     <td className="p-4 text-white text-center">
-                                        {test.results.throughput} tx/s
+                                        {test.results.sendRate} tx/s
                                     </td>
 
                                     <td className="p-4 text-white text-center">
-                                        {test.results.sendRate} tx/s
+                                        {test.results.throughput} tx/s
                                     </td>
 
                                     <td className="p-4 text-white text-center">
