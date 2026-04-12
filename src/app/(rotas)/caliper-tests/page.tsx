@@ -4,9 +4,9 @@ import { useEffect, useState } from 'react';
 import { useAppStore } from '@/src/store/useAppStore';
 
 import AboutCaliper from './AboutCaliper';
-import ConfigTests from './ConfigTests';
-import ResultTestes from './ResultTestes';
-import HistoricTests from './HistoricTests';
+import ConfigTests from './Config/ConfigTests';
+import ResultTestes from './Results/ResultTestes';
+import HistoricTests from './Historic/HistoricTests';
 import CardRunning from './CardRunning';
 
 export default function CaliperTesting() {

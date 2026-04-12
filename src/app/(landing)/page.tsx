@@ -93,13 +93,6 @@ export default function Home() {
               </a>
 
             </div>
-
-            <p className="mt-6 text-sm text-zinc-400">
-              ⚠️ A aplicação não cria a rede automaticamente.
-              É necessário executar sua rede Besu externamente para que o dashboard
-              possa se conectar através dos endpoints RPC, WebSocket e Metrics.
-            </p>
-
           </div>
 
         </div>
@@ -264,26 +257,26 @@ export default function Home() {
           Endpoints Utilizados
         </h2>
 
-        <div className="bg-zinc-900 text-green-400 p-6 rounded-lg font-mono text-sm">
-
-          {`RPC Endpoint:
-http://localhost:8545
-
-WebSocket Endpoint:
-ws://localhost:8546
-
-Metrics Endpoint:
-http://localhost:9545/metrics`}
-        </div>
-
         <p className="mt-6 text-zinc-600 dark:text-zinc-400">
-          Certifique-se de que os nós da rede estejam ativos antes
-          de conectar a aplicação, pois o dashboard realiza
-          requisições RPC diretamente para avaliar o estado da rede.
+          ⚠️ A aplicação não cria a rede automaticamente.
+          É necessário executar sua rede Besu externamente para que o dashboard
+          possa se conectar através dos endpoints RPC, WebSocket e Metrics.
+          Ao criar a rede através do <a
+                href="https://github.com/viniciusSt1/Hyperledger-Besu"
+                target="_blank"
+                className="text-purple-400 hover:text-purple-300 transition-colors"
+              >repositório</a> de recomendação, certifique-se de que os nós estejam ativos e minerando corretamente para que as métricas sejam coletadas e os benchmarks possam ser executados com sucesso.
+        </p>
+        <p className="mt-6 text-zinc-600 dark:text-zinc-400">
+          A rede disponibilizada no repositório do github utiliza os seguintes endpoints por padrão, mas é possível configurar outros endpoints caso necessário.
         </p>
 
+        <div className="bg-zinc-900 text-green-400 p-6 rounded-lg font-mono text-sm mt-6">
+          <p className="mb-2">RPC Endpoint: http://localhost:8545 </p>
+          <p className="mb-2">WebSocket Endpoint: ws://localhost:8545 </p>
+          <p>Metrics Endpoint: http://localhost:9545/metrics</p>
+        </div>
       </section>
-
 
       {/* FOOTER */}
       <footer className="border-t border-zinc-200 dark:border-zinc-800">

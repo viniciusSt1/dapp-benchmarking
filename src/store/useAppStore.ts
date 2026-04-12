@@ -22,15 +22,20 @@ interface BlockchainState {
   explorerUrl: string;
 }
 
-interface ContractState {
+interface lastContractDeployState {
   address: string;
   name: string;
-  solidityVersion: string;
-  abi: any[] | null;
+  abi: any;
+  errorDeploy: any;
+  deployResult: any;
+  isDeploing: boolean;
+  //solidityVersion: string;
+  //evmVersion: string;
 }
 
 interface WalletState {
-  address: string | null;
+  privateKey: string;
+  publicKey: string;
 }
 
 export interface CaliperResults {
@@ -68,13 +73,13 @@ interface CaliperState {
 interface AppState {
   project: ProjectState;
   blockchain: BlockchainState;
-  contract: ContractState;
+  lastContractDeploy: lastContractDeployState;
   wallet: WalletState;
   caliper: CaliperState;
 
   setProject: (project: Partial<ProjectState>) => void;
   setBlockchain: (blockchain: Partial<BlockchainState>) => void;
-  setContract: (contract: Partial<ContractState>) => void;
+  setContract: (lastContractDeploy: Partial<lastContractDeployState>) => void;
   setWallet: (wallet: Partial<WalletState>) => void;
   setCaliper: (caliper: Partial<CaliperState>) => void;
 
@@ -102,15 +107,20 @@ export const useAppStore = create<AppState>()(
         explorerUrl: "",
       },
 
-      contract: {
+      lastContractDeploy: {
         address: "",
         name: "",
-        solidityVersion: "",
         abi: null,
+        isDeploing: false,
+        errorDeploy: null,
+        deployResult: null,
+        //solidityVersion: "",
+        //evmVersion: "",
       },
 
       wallet: {
-        address: null,
+        privateKey: "0x8f2a55949038a9610f50fb23b5883af3b4ecb3c3bb792cbcefbd1542c692be63",
+        publicKey: "0xfe3b557e8fb62b89f4916b721be55ceb828dbd73", 
       },
 
       caliper: {
@@ -148,9 +158,9 @@ export const useAppStore = create<AppState>()(
         }));
       },
 
-      setContract: (contract) =>
+      setContract: (lastContractDeploy) =>
         set((state) => ({
-          contract: { ...state.contract, ...contract },
+          lastContractDeploy: { ...state.lastContractDeploy, ...lastContractDeploy },
         })),
 
       setWallet: (wallet) =>
@@ -219,9 +229,9 @@ export const useAppStore = create<AppState>()(
       partialize: (state) => ({
         project: state.project,
         blockchain: state.blockchain,
-        contract: state.contract,
-        wallet: state.wallet,
         caliper: state.caliper,
+        //wallet: state.wallet,
+        //lastContractDeploy: state.lastContractDeploy,
       }),
     }
   )

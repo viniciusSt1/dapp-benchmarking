@@ -10,6 +10,8 @@ numTransactions=$3
 workers=$4
 contractAddress=$5
 wsEndpoint=$6
+privateKey=$7
+publicKey=$8
 
 NETWORK_CONFIG="networks/besu/networkconfig.json"
 
@@ -38,6 +40,14 @@ jq --arg addr "$contractAddress" \
 
 jq --arg ws "$wsEndpoint" \
   '.ethereum.url = $ws' \
+  "$NETWORK_CONFIG" > "$tmp" && mv "$tmp" "$NETWORK_CONFIG"
+
+jq --arg pk "$publicKey" \
+  '.ethereum.fromAddress = $pk' \
+  "$NETWORK_CONFIG" > "$tmp" && mv "$tmp" "$NETWORK_CONFIG"
+
+jq --arg pk "$privateKey" \
+  '.ethereum.fromAddressPrivateKey = $pk' \
   "$NETWORK_CONFIG" > "$tmp" && mv "$tmp" "$NETWORK_CONFIG"
 
 # atualizar YAML

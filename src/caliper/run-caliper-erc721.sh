@@ -11,6 +11,8 @@ numTransactions=$4
 workers=$5
 contractAddress=$6
 wsEndpoint=$7
+privateKey=$8
+publicKey=$9
 
 tokenId=$(date +%s%3N)
 
@@ -31,6 +33,14 @@ jq --arg addr "$contractAddress" \
 
 jq --arg ws "$wsEndpoint" \
   '.ethereum.url = $ws' \
+  "$NETWORK_CONFIG" > "$tmp" && mv "$tmp" "$NETWORK_CONFIG"
+
+jq --arg pk "$publicKey" \
+  '.ethereum.fromAddress = $pk' \
+  "$NETWORK_CONFIG" > "$tmp" && mv "$tmp" "$NETWORK_CONFIG"
+
+jq --arg pk "$privateKey" \
+  '.ethereum.fromAddressPrivateKey = $pk' \
   "$NETWORK_CONFIG" > "$tmp" && mv "$tmp" "$NETWORK_CONFIG"
 
 # atualizar YAML

@@ -13,7 +13,7 @@ test:
   rounds:
     - label: transfer
       description: Test description for transfering money between accounts.
-      txNumber: 300
+      txNumber: 1000
       rateControl:
         type: fixed-rate
         opts:

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import ResultCard from "./ResultCard";
 import { CheckCircle, XCircle, Gauge, Zap, Timer, Download } from "lucide-react";
+import { toast } from "sonner";
 
 export default function ResultTestes({ results }: {
   results: {
@@ -32,7 +33,7 @@ export default function ResultTestes({ results }: {
     const res = await fetch("/api/benchmark/report");
 
     if (!res.ok) {
-      alert("Erro ao baixar relatório");
+      toast.error("Erro ao baixar relatório");
       return;
     }
 
@@ -45,6 +46,8 @@ export default function ResultTestes({ results }: {
     a.click();
 
     window.URL.revokeObjectURL(url);
+
+    toast.success("Relatório disponibilizado com sucesso!");
   };
 
   return (
@@ -74,9 +77,9 @@ export default function ResultTestes({ results }: {
 
       {/* Latências */}
       <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-        <ResultCard label="Latência Mínima" value={`${results.latency.min} ms`} icon={Timer} color="text-green-300" />
-        <ResultCard label="Latência Média" value={`${results.latency.avg} ms`} icon={Timer} color="text-blue-300" />
-        <ResultCard label="Latência Máxima" value={`${results.latency.max} ms`} icon={Timer} color="text-red-300" />
+        <ResultCard label="Latência Mínima" value={`${results.latency.min} s`} icon={Timer} color="text-green-300" />
+        <ResultCard label="Latência Média" value={`${results.latency.avg} s`} icon={Timer} color="text-blue-300" />
+        <ResultCard label="Latência Máxima" value={`${results.latency.max} s`} icon={Timer} color="text-red-300" />
       </div>
     </div>
   );

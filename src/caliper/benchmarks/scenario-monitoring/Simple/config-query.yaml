@@ -13,7 +13,7 @@ test:
   rounds:
     - label: query
       description: Test description for the query performance of the deployed contract.
-      txNumber: 300
+      txNumber: 1000
       rateControl:
         type: fixed-rate
         opts:

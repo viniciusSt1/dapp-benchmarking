@@ -2,6 +2,7 @@
 
 import { useEffect, useState, forwardRef, useImperativeHandle } from "react";
 import { useAppStore } from "@/src/store/useAppStore";
+import { toast } from "sonner";
 
 const ConfigSimple = forwardRef((props, ref) => {
     const [selectedFunction, setSelectedFunction] = useState<string>("open");
@@ -14,13 +15,25 @@ const ConfigSimple = forwardRef((props, ref) => {
     const { wsEndpoint } = useAppStore((state) => state.blockchain);
 
     const { lastBenchmarkInputs } = useAppStore((state) => state.caliper);
+    const wallet = useAppStore((state) => state.wallet);
 
     useEffect(() => {
-        setTargetSendRate(lastBenchmarkInputs.targetSendRate.toString());
-        setNumTransactions(lastBenchmarkInputs.numTransactions.toString());
-        setWorkers(lastBenchmarkInputs.workers.toString());
-        if (lastBenchmarkInputs.contractName === "simple")
+        if (lastBenchmarkInputs.contractName === "Simple") {
+            if(lastBenchmarkInputs.targetSendRate) 
+                setTargetSendRate(lastBenchmarkInputs.targetSendRate.toString());
+
+            if(lastBenchmarkInputs.numTransactions) 
+                setNumTransactions(lastBenchmarkInputs.numTransactions.toString());
+
+            if(lastBenchmarkInputs.workers) 
+                setWorkers(lastBenchmarkInputs.workers.toString());
+
+            if(lastBenchmarkInputs.functionName)
+                setSelectedFunction(lastBenchmarkInputs.functionName);
+
             setContractAddress(lastBenchmarkInputs.contractAddress);
+        }
+            
     }, [])
 
     async function getResult() {
@@ -77,23 +90,23 @@ const ConfigSimple = forwardRef((props, ref) => {
 
     async function startBenchmark(contractExists: (address: string) => Promise<boolean>) {
         if (targetSendRate == '' || Number(targetSendRate) <= 0) {
-            alert("O Send Rate Alvo deve ser maior que 0");
+            toast.error("O Send Rate Alvo deve ser maior que 0");
             return;
         }
 
         if (numTransactions == '' || Number(numTransactions) <= 0) {
-            alert("O número de transações deve ser maior que 0");
+            toast.error("O número de transações deve ser maior que 0");
             return;
         }
 
         if (workers == '' || Number(workers) <= 0) {
-            alert("O número de workers deve ser maior que 0");
+            toast.error("O número de workers deve ser maior que 0");
             return;
         }
 
         const exists = await contractExists(contractAddress);
         if (!exists) {
-            alert("O endereço informado não possui contrato deployado na rede.");
+            toast.error("O endereço informado não possui contrato deployado na rede.");
             return;
         }
 
@@ -120,7 +133,9 @@ const ConfigSimple = forwardRef((props, ref) => {
                     numTransactions: Number(numTransactions),
                     workers: Number(workers),
                     contractAddress,
-                    wsEndpoint: wsEndpoint
+                    wsEndpoint: wsEndpoint,
+                    privateKey: wallet.privateKey,
+                    publicKey: wallet.publicKey
                 })
             });
 
@@ -129,9 +144,12 @@ const ConfigSimple = forwardRef((props, ref) => {
             }
 
             const data = await res.json();
-            console.log("Benchmark finalizado:", data);
+            
+            //console.log("Benchmark finalizado:", data);
+            toast.success(`Benchmark Simple: ${selectedFunction} finalizado com sucesso!`);
         } catch (err) {
-            console.log("Erro ao iniciar benchmark:", err);
+            //console.log("Erro ao iniciar benchmark:", err);
+            toast.error("Erro na execução do benchmark!");
         } finally {
             await getResult();
         }
@@ -191,6 +209,7 @@ const ConfigSimple = forwardRef((props, ref) => {
                     <label className="text-slate-300 mb-2 block">Número de Workers</label>
                     <input
                         type="number"
+                        disabled
                         value={workers}
                         onChange={(e) => setWorkers(e.target.value)}
                         className="w-full bg-slate-800 text-white px-4 py-2 rounded-lg border border-slate-700 focus:border-purple-600 focus:outline-none"

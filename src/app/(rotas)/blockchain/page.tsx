@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react';
-import { CheckCircle2, XCircle, RefreshCw, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { useAppStore } from '@/src/store/useAppStore';

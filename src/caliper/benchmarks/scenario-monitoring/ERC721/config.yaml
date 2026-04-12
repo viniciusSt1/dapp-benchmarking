@@ -1,5 +1,5 @@
 simpleArgs:
-  tokenId: &tokenId 1774419563777
+  tokenId: &tokenId 1775973447237
 
   txNumberMint: &txNumberMint 10
   txNumberTransfer: &txNumberTransfer 10
@@ -18,7 +18,7 @@ test:
   rounds:
     - label: Mint
       description: Mint ERC721 Tokens
-      txNumber: 300
+      txNumber: 50
       rateControl:
         type: fixed-rate
         opts:
@@ -30,7 +30,7 @@ test:
 
     - label: Transferfrom
       description: Transfer ERC721 Tokens
-      txNumber: 300
+      txNumber: 50
       rateControl:
         type: fixed-rate
         opts:

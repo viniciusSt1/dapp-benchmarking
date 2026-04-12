@@ -57,7 +57,7 @@ export default function HistoricTests() {
                             <th className="text-center text-slate-400 pb-3">Contrato/Função</th>
                             <th className="text-center text-slate-400 pb-3">Send Rate</th>
                             <th className="text-center text-slate-400 pb-3">Throughput</th>
-                            <th className="text-center text-slate-400 pb-3">Latência (ms)</th>
+                            <th className="text-center text-slate-400 pb-3">Latência (s)</th>
                             <th className="text-center text-slate-400 pb-3">Sucesso (%)</th>
                             <th className="text-center text-slate-400 pb-3">Status</th>
                             <th className="text-center text-slate-400 pb-3" colSpan={2}>Ações</th>

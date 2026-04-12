@@ -5,19 +5,19 @@ import { CheckCircle2, FileCode, Rocket, Zap, XCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAppStore } from '@/src/store/useAppStore';
 import Input from '@/src/components/ui/Input';
+import Link from 'next/link';
 
 export default function Deploy() {
-    // Deploy states
     const [contractName, setContractName] = useState('');
     const [solidityVersion, setSolidityVersion] = useState('^0.8.33'); // fixed 
     const [solFile, setSolFile] = useState<File | null>(null);
-    const [isDeploying, setIsDeploying] = useState(false);
-    const [deployedAddress, setDeployedAddress] = useState('');
-    const [deployResult, setDeployResult] = useState<any>(null);
+    //const [isDeploying, setIsDeploying] = useState(false);
+    //const [deployedAddress, setDeployedAddress] = useState('');
+    //const [deployResult, setDeployResult] = useState<any>(null);
     const [contractSource, setContractSource] = useState('');
     const [contracts, setContracts] = useState<any>({});
 
-    const [deployError, setDeployError] = useState<string | null>(null);
+    //const [deployError, setDeployError] = useState<string | null>(null);
     const [showDetails, setShowDetails] = useState(false);
     const [evmVersion, setEvmVersion] = useState<any>('shanghai');
     const [selectedContract, setSelectedContract] = useState<string | null>(null);
@@ -25,6 +25,11 @@ export default function Deploy() {
     const { rpcEndpoint } = useAppStore((state) => state.blockchain);
     const checkRpc = useAppStore((s) => s.checkRpcEndpointConnection)
     const rpcConnected = useAppStore((s) => s.blockchain.rpcEndpointConnected)
+
+    const lastContractDeploy = useAppStore((s) => s.lastContractDeploy);
+    const setLastContractDeploy = useAppStore((s) => s.setContract);
+
+    const wallet = useAppStore((s) => s.wallet);
 
     useEffect(() => {
         async function loadAllContracts() {
@@ -49,18 +54,14 @@ export default function Deploy() {
         loadAllContracts();
     }, []);
 
-    // check rpcEndpoint connection
-    useEffect(() => {
-        checkRpc()
-    }, [rpcEndpoint]);
-
-    // ----------------- Deploy
     async function handleDeploy(e: React.FormEvent) {
         e.preventDefault();
-        setIsDeploying(true);
-        setDeployResult(null);
-        setDeployError(null);
-        setDeployedAddress('');
+        //setIsDeploying(true);
+        //setDeployResult(null);
+        //setDeployError(null);
+        //setDeployedAddress('');
+
+        setLastContractDeploy({isDeploing: true});
 
         try {
             const res = await fetch("/api/deploy", {
@@ -71,28 +72,33 @@ export default function Deploy() {
                     contractSource,
                     solidityVersion,
                     evmVersion,
-                    privateKey: "0x8f2a55949038a9610f50fb23b5883af3b4ecb3c3bb792cbcefbd1542c692be63", // --> Conta fe3b... -> Ajustar conexão com wallet do app depois
+                    privateKey: wallet.privateKey,
                     rpcEndpoint
                 }),
             });
 
             const data = await res.json();
-            setDeployResult(data);
+            //setDeployResult(data);
+            setLastContractDeploy({deployResult: data });
 
             if (data.error || !data.address) {
-                setDeployError(data.error || "Erro desconhecido durante o deploy.");
+                //setDeployError(data.error || "Erro desconhecido durante o deploy.");
+                setLastContractDeploy({errorDeploy: data.error || "Erro desconhecido durante o deploy."});
                 toast.error("Erro ao implantar contrato.");
             } else {
-                setDeployedAddress(data.address);
+                //setDeployedAddress(data.address);
+                setLastContractDeploy({address: data.address, name: contractName, abi: data.abi, errorDeploy: null});
                 toast.success("Contrato implantado com sucesso!");
             }
 
         } catch (error) {
-            setDeployError("Falha na comunicação com o servidor.");
+            //setDeployError("Falha na comunicação com o servidor.");
+            setLastContractDeploy({errorDeploy: "Falha na comunicação com o servidor."});
             toast.error("Falha durante o deploy.");
         }
 
-        setIsDeploying(false);
+        //setIsDeploying(false);
+        setLastContractDeploy({isDeploing: false});
     }
 
     function handleSelectContract(key: string) {
@@ -124,6 +130,11 @@ export default function Deploy() {
             toast.success('Arquivo .sol carregado com sucesso!');
         }
     };
+
+    function truncate(text: string, max = 120) {
+        if (!text) return ''
+        return text.length > max ? text.slice(0, max) + '...' : text
+    }
 
     return (
         <div className="space-y-6">
@@ -257,10 +268,10 @@ export default function Deploy() {
             {/* Botão Deploy */}
             <button
                 onClick={handleDeploy}
-                disabled={isDeploying || !rpcConnected}
+                disabled={lastContractDeploy.isDeploing || !rpcConnected}
                 className="w-full px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:from-purple-700 hover:to-blue-700 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-                {isDeploying ? (
+                {lastContractDeploy.isDeploing ? (
                     <>
                         <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                         Implantando Contrato...
@@ -278,22 +289,22 @@ export default function Deploy() {
                     <p className="text-red-400 font-medium mb-3">
                         Não foi possível conectar ao Rpc Endpoint, verifique sua url. <i>(  {rpcEndpoint}  )</i>
                     </p>
-                    <a
+                    <Link
                         href="/blockchain"
                         className="inline-block px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white transition-all"
                     >
                         Configurar Endpoints
-                    </a>
+                    </Link>
                 </div>)}
 
             {/* Resultado do Deploy */}
-            {deployError && (
+            {lastContractDeploy.errorDeploy && (
                 <div className="bg-red-600/10 border border-red-600/30 rounded-lg p-4">
                     <div className="flex items-start gap-3">
                         <XCircle className="w-6 h-6 text-red-500 flex-shrink-0 mt-0.5" />
                         <div className="flex-1">
                             <p className="text-white mb-1">Erro ao implantar o contrato</p>
-                            <p className="text-red-400 text-sm mb-2">{deployError}</p>
+                            <p className="text-red-400 text-sm mb-2 line-clamp-2">{truncate(lastContractDeploy.errorDeploy, 300)}</p>
                             <button
                                 className="text-red-400 text-sm underline"
                                 onClick={() => setShowDetails((s) => !s)}
@@ -305,13 +316,13 @@ export default function Deploy() {
 
                     {showDetails && (
                         <pre className="mt-4 text-xs bg-zinc-950 p-4 rounded whitespace-pre-wrap break-all border border-red-800">
-                            {JSON.stringify(deployResult, null, 2)}
+                            {JSON.stringify(lastContractDeploy.deployResult, null, 2)}
                         </pre>
                     )}
                 </div>
             )}
 
-            {deployedAddress && !deployError && (
+            {lastContractDeploy.address && !lastContractDeploy.errorDeploy && (
                 <div className="bg-green-600/10 border border-green-600/30 rounded-lg p-4">
                     <div className="flex items-start gap-3">
                         <CheckCircle2 className="w-6 h-6 text-green-500 flex-shrink-0 mt-0.5" />
@@ -321,7 +332,7 @@ export default function Deploy() {
                             {/* Endereço do contrato */}
                             <p className="text-slate-400 text-sm mb-2">Endereço do contrato:</p>
                             <div className="bg-slate-900 rounded-lg p-3 font-mono text-green-400 break-all">
-                                {deployedAddress}
+                                {lastContractDeploy.address}
                             </div>
 
                             {/* Botão para ver detalhes */}
@@ -336,7 +347,7 @@ export default function Deploy() {
 
                     {showDetails && (
                         <pre className="mt-4 text-xs bg-zinc-950 p-4 rounded whitespace-pre-wrap break-all border border-green-800">
-                            {JSON.stringify(deployResult, null, 2)}
+                            {JSON.stringify(lastContractDeploy.deployResult, null, 2)}
                         </pre>
                     )}
                 </div>

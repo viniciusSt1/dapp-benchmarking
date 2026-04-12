@@ -32,7 +32,12 @@ function runScript(args: string[], cwd: string, contractName: string) {
 }
 
 export async function POST(req: Request) {
-  const { contractName, functionName, targetSendRate, targetSendRateMint, targetSendRateTransfer, numTransactions, workers, contractAddress, wsEndpoint } = await req.json();
+  const { contractName, functionName,
+          targetSendRate, targetSendRateMint,
+          targetSendRateTransfer, numTransactions,
+          workers, contractAddress, wsEndpoint, 
+          privateKey, publicKey
+       } = await req.json();
 
   const reportPath = path.resolve(process.cwd(), "src/caliper/report.html");
 
@@ -45,11 +50,11 @@ export async function POST(req: Request) {
   const caliperPath = path.resolve(process.cwd(), "src/caliper");
   var args: string[] = [];
   if (contractName == "simple")
-    args = [functionName, targetSendRate.toString(), numTransactions.toString(), workers.toString(), contractAddress, wsEndpoint];
+    args = [functionName, targetSendRate.toString(), numTransactions.toString(), workers.toString(), contractAddress, wsEndpoint, privateKey, publicKey];
   else if (contractName == "MyERC20")
-    args = [functionName, targetSendRate.toString(), numTransactions.toString(), workers.toString(), contractAddress, wsEndpoint];
+    args = [functionName, targetSendRate.toString(), numTransactions.toString(), workers.toString(), contractAddress, wsEndpoint, privateKey, publicKey];
   else if (contractName == "MyERC721")
-    args = [functionName, targetSendRateMint.toString(), targetSendRateTransfer.toString(), numTransactions.toString(), workers.toString(), contractAddress, wsEndpoint];
+    args = [functionName, targetSendRateMint.toString(), targetSendRateTransfer.toString(), numTransactions.toString(), workers.toString(), contractAddress, wsEndpoint, privateKey, publicKey];
   else
     return NextResponse.json({ finished: true, error: "É necessário informar o nome do contrato (simple, MyERC20 ou MyERC721)" });
 
