@@ -5,7 +5,7 @@
   },
   "ethereum": {
     "url": "ws://localhost:8645",
-    "fromAddress": "0xFE3B557E8Fb62b89F4916B721be55cEb828dBd73",
+    "fromAddress": "0xfe3b557e8fb62b89f4916b721be55ceb828dbd73",
     "fromAddressPrivateKey": "0x8f2a55949038a9610f50fb23b5883af3b4ecb3c3bb792cbcefbd1542c692be63",
     "transactionConfirmationBlocks": 1,
     "contracts": {
@@ -190,7 +190,7 @@
         ]
       },
       "simple": {
-        "address": "0xc39E222E46f0d211EdDa79086522d22D1DD19083",
+        "address": "0x7d6bB59448B8d599e496529FF9DBa03B0Fc83C20",
         "estimateGas": true,
         "gas": {
           "open": 1000000000,
@@ -261,7 +261,7 @@
         ]
       },
       "MyERC721": {
-        "address": "0xe784090B59ab181100596B5A9DEeDA7D61c4210F",
+        "address": "0x87D5081cF842aB70C6ff64319Ce4e1fc11Dc4f62",
         "estimateGas": true,
         "gas": {
           "mint": 1000000000,
@@ -727,7 +727,7 @@
         ]
       },
       "MyERC20": {
-        "address": "0xA5646CE942874E77EcAfd8b840566F2E8330b31e",
+        "address": "0x89A5d03F538DaD98a04a8847417414F1048238ED",
         "estimateGas": true,
         "gas": {
           "transfer": 1000000000

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { CheckCircle2, FileCode, Rocket, Zap, XCircle } from 'lucide-react';
+import { CheckCircle2, FileCode, Rocket, Zap, XCircle, Copy, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAppStore } from '@/src/store/useAppStore';
 import Input from '@/src/components/ui/Input';
@@ -11,13 +11,9 @@ export default function Deploy() {
     const [contractName, setContractName] = useState('');
     const [solidityVersion, setSolidityVersion] = useState('^0.8.33'); // fixed 
     const [solFile, setSolFile] = useState<File | null>(null);
-    //const [isDeploying, setIsDeploying] = useState(false);
-    //const [deployedAddress, setDeployedAddress] = useState('');
-    //const [deployResult, setDeployResult] = useState<any>(null);
     const [contractSource, setContractSource] = useState('');
     const [contracts, setContracts] = useState<any>({});
 
-    //const [deployError, setDeployError] = useState<string | null>(null);
     const [showDetails, setShowDetails] = useState(false);
     const [evmVersion, setEvmVersion] = useState<any>('shanghai');
     const [selectedContract, setSelectedContract] = useState<string | null>(null);
@@ -28,8 +24,17 @@ export default function Deploy() {
 
     const lastContractDeploy = useAppStore((s) => s.lastContractDeploy);
     const setLastContractDeploy = useAppStore((s) => s.setContract);
+    const addContractHistory = useAppStore((s) => s.addContractHistory);
 
     const wallet = useAppStore((s) => s.wallet);
+
+    const [copied, setCopied] = useState(false)
+
+    const handleCopy = (text: string) => {
+        navigator.clipboard.writeText(text)
+        setCopied(true)
+        setTimeout(() => setCopied(false), 1200)
+    }
 
     useEffect(() => {
         async function loadAllContracts() {
@@ -56,12 +61,8 @@ export default function Deploy() {
 
     async function handleDeploy(e: React.FormEvent) {
         e.preventDefault();
-        //setIsDeploying(true);
-        //setDeployResult(null);
-        //setDeployError(null);
-        //setDeployedAddress('');
 
-        setLastContractDeploy({isDeploing: true});
+        setLastContractDeploy({ isDeploing: true });
 
         try {
             const res = await fetch("/api/deploy", {
@@ -78,27 +79,25 @@ export default function Deploy() {
             });
 
             const data = await res.json();
-            //setDeployResult(data);
-            setLastContractDeploy({deployResult: data });
+            setLastContractDeploy({ deployResult: data });
 
             if (data.error || !data.address) {
-                //setDeployError(data.error || "Erro desconhecido durante o deploy.");
-                setLastContractDeploy({errorDeploy: data.error || "Erro desconhecido durante o deploy."});
+                setLastContractDeploy({ errorDeploy: data.error || "Erro desconhecido durante o deploy." });
+                addContractHistory({ address: '', status: 'failed', name: contractName, date: Date.now() });
                 toast.error("Erro ao implantar contrato.");
             } else {
-                //setDeployedAddress(data.address);
-                setLastContractDeploy({address: data.address, name: contractName, abi: data.abi, errorDeploy: null});
+                setLastContractDeploy({ address: data.address, name: contractName, abi: data.abi, errorDeploy: null });
+                addContractHistory({ address: data.address, status: 'success', name: contractName, date: Date.now() });
                 toast.success("Contrato implantado com sucesso!");
             }
 
         } catch (error) {
-            //setDeployError("Falha na comunicação com o servidor.");
-            setLastContractDeploy({errorDeploy: "Falha na comunicação com o servidor."});
+            setLastContractDeploy({ errorDeploy: "Falha na comunicação com o servidor." });
+            addContractHistory({ address: '', status: 'failed', name: contractName, date: Date.now() });
             toast.error("Falha durante o deploy.");
         }
 
-        //setIsDeploying(false);
-        setLastContractDeploy({isDeploing: false});
+        setLastContractDeploy({ isDeploing: false });
     }
 
     function handleSelectContract(key: string) {
@@ -331,8 +330,22 @@ export default function Deploy() {
 
                             {/* Endereço do contrato */}
                             <p className="text-slate-400 text-sm mb-2">Endereço do contrato:</p>
-                            <div className="bg-slate-900 rounded-lg p-3 font-mono text-green-400 break-all">
-                                {lastContractDeploy.address}
+                            <div className="bg-slate-900 rounded-lg p-3 font-mono text-green-400 flex items-center justify-between gap-3">
+                                <span className="break-all">
+                                    {lastContractDeploy.address}
+                                </span>
+
+                                <button
+                                    onClick={() => handleCopy(lastContractDeploy.address)}
+                                    className="flex-shrink-0 p-1.5 rounded-md hover:bg-slate-700 transition"
+                                    title="Copiar endereço"
+                                >
+                                    {copied ? (
+                                        <Check className="w-4 h-4 text-green-400" />
+                                    ) : (
+                                        <Copy className="w-4 h-4 text-slate-300" />
+                                    )}
+                                </button>
                             </div>
 
                             {/* Botão para ver detalhes */}

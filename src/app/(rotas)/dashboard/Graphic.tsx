@@ -1,7 +1,7 @@
 import { LineChart, Line, BarChart, Bar, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 export default function Graphic({children, title, color, type, values}: {children: React.ReactNode, title: string, color: string, type: string, values: any[]}) {
-    return (    // !! NÃO INCLUIDO NO PAGE, AJUSTAR
+    return (
         <div className="bg-slate-900 rounded-xl border border-slate-800 p-6">
             <div className="flex items-center gap-3 mb-4">
                 <div className="w-10 h-10 bg-green-600/20 rounded-lg flex items-center justify-center">

@@ -1,5 +1,5 @@
 simpleArgs:
-  tokenId: &tokenId 1775973447237
+  tokenId: &tokenId 1776037493259
 
   txNumberMint: &txNumberMint 10
   txNumberTransfer: &txNumberTransfer 10

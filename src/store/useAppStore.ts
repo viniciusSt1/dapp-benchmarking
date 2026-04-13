@@ -13,13 +13,17 @@ interface ProjectState {
 }
 
 interface BlockchainState {
-  chainId: number | string;
+  //chainId: number | string;
   rpcEndpoint: string;
   rpcEndpointConnected: boolean;
   wsEndpoint: string;
   metricsEndpoint: string;
   blockTime: number;
   explorerUrl: string;
+}
+
+interface contractHistoryState {
+  historic: Array<{ address: string; status: "success" | "failed"; name: string;  date: number }>;
 }
 
 interface lastContractDeployState {
@@ -74,12 +78,16 @@ interface AppState {
   project: ProjectState;
   blockchain: BlockchainState;
   lastContractDeploy: lastContractDeployState;
+  contractHistory: contractHistoryState;
   wallet: WalletState;
   caliper: CaliperState;
 
   setProject: (project: Partial<ProjectState>) => void;
   setBlockchain: (blockchain: Partial<BlockchainState>) => void;
   setContract: (lastContractDeploy: Partial<lastContractDeployState>) => void;
+  setContractHistory: (contractHistory: Partial<contractHistoryState>) => void;
+  addContractHistory: (item: { address: string; status: "success" | "failed"; name: string; date: number }) => void;
+  removeContractHistory: (index: number) => void;
   setWallet: (wallet: Partial<WalletState>) => void;
   setCaliper: (caliper: Partial<CaliperState>) => void;
 
@@ -98,13 +106,17 @@ export const useAppStore = create<AppState>()(
       },
 
       blockchain: {
-        chainId: "",
+        //chainId: "",
         rpcEndpoint: "",
         rpcEndpointConnected: false,
         wsEndpoint: "",
         metricsEndpoint: "",
         blockTime: 5,
         explorerUrl: "",
+      },
+
+      contractHistory: {
+        historic: [],
       },
 
       lastContractDeploy: {
@@ -161,6 +173,27 @@ export const useAppStore = create<AppState>()(
       setContract: (lastContractDeploy) =>
         set((state) => ({
           lastContractDeploy: { ...state.lastContractDeploy, ...lastContractDeploy },
+        })),
+      
+      addContractHistory: (item) =>
+        set((state) => ({
+          contractHistory: {
+            ...state.contractHistory,
+            historic: [...state.contractHistory.historic, item],
+          },
+      })),
+
+      removeContractHistory: (index) =>
+        set((state) => ({
+          contractHistory: {
+            ...state.contractHistory,
+            historic: state.contractHistory.historic.filter((_, i) => i !== index),
+          },
+      })),
+
+      setContractHistory: (contractHistory) =>
+        set((state) => ({
+          contractHistory: { ...state.contractHistory, ...contractHistory },
         })),
 
       setWallet: (wallet) =>
@@ -230,6 +263,7 @@ export const useAppStore = create<AppState>()(
         project: state.project,
         blockchain: state.blockchain,
         caliper: state.caliper,
+        contractHistory: state.contractHistory,
         //wallet: state.wallet,
         //lastContractDeploy: state.lastContractDeploy,
       }),

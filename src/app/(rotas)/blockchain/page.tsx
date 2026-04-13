@@ -79,7 +79,13 @@ export default function BlockchainConfig() {
     // Brincadeirinha
     setTimeout(() => {
       setIsConnecting(false);
-      toast.success('Conectado à rede com sucesso!');
+      const currentState = useAppStore.getState()
+
+      if (!currentState.blockchain.rpcEndpointConnected) {
+        toast.error('Falha ao conectar à rede...')
+        return
+      }
+      toast.success('Conectado com sucesso!');
     }, 1500);
   };
 
@@ -89,7 +95,7 @@ export default function BlockchainConfig() {
       rpcEndpointConnected:false,
       wsEndpoint: '',
       metricsEndpoint: '',
-      chainId: '',
+      //chainId: '',
       blockTime: 5,
       explorerUrl: '',
     });
