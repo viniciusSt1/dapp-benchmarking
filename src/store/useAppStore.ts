@@ -42,6 +42,23 @@ interface WalletState {
   publicKey: string;
 }
 
+interface ContractFunctionsState {
+  contractAddress: string;
+  abiText: string;
+  isVerified: boolean;
+  functions: Array<{
+    key: string;
+    name: string;
+    type: 'read' | 'write';
+    stateMutability: string;
+    inputs: { name: string; type: string }[];
+    outputs?: { type: string }[];
+  }>;
+  inputValues: Record<string, string[]>;
+  functionResults: Record<string, string>;
+  loadingFunction: string | null;
+}
+
 export interface CaliperResults {
   success: number;
   failures: number;
@@ -80,6 +97,7 @@ interface AppState {
   lastContractDeploy: lastContractDeployState;
   contractHistory: contractHistoryState;
   wallet: WalletState;
+  contractFunctions: ContractFunctionsState;
   caliper: CaliperState;
 
   setProject: (project: Partial<ProjectState>) => void;
@@ -89,6 +107,7 @@ interface AppState {
   addContractHistory: (item: { address: string; status: "success" | "failed"; name: string; date: number }) => void;
   removeContractHistory: (index: number) => void;
   setWallet: (wallet: Partial<WalletState>) => void;
+  setContractFunctions: (contractFunctions: Partial<ContractFunctionsState>) => void;
   setCaliper: (caliper: Partial<CaliperState>) => void;
 
   checkRpcEndpointConnection: () => Promise<void>;
@@ -133,6 +152,16 @@ export const useAppStore = create<AppState>()(
       wallet: {
         privateKey: "0x8f2a55949038a9610f50fb23b5883af3b4ecb3c3bb792cbcefbd1542c692be63",
         publicKey: "0xfe3b557e8fb62b89f4916b721be55ceb828dbd73", 
+      },
+
+      contractFunctions: {
+        contractAddress: "",
+        abiText: "",
+        isVerified: false,
+        functions: [],
+        inputValues: {},
+        functionResults: {},
+        loadingFunction: null,
       },
 
       caliper: {
@@ -201,6 +230,11 @@ export const useAppStore = create<AppState>()(
           wallet: { ...state.wallet, ...wallet },
         })),
 
+      setContractFunctions: (contractFunctions) =>
+        set((state) => ({
+          contractFunctions: { ...state.contractFunctions, ...contractFunctions },
+        })),
+
       setCaliper: (caliper) =>
         set((state) => ({
           caliper: { ...state.caliper, ...caliper },
@@ -264,6 +298,7 @@ export const useAppStore = create<AppState>()(
         blockchain: state.blockchain,
         caliper: state.caliper,
         contractHistory: state.contractHistory,
+        contractFunctions: state.contractFunctions,
         //wallet: state.wallet,
         //lastContractDeploy: state.lastContractDeploy,
       }),

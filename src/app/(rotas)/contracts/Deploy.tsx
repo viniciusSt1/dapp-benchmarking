@@ -29,11 +29,21 @@ export default function Deploy() {
     const wallet = useAppStore((s) => s.wallet);
 
     const [copied, setCopied] = useState(false)
+    const [copiedAbi, setCopiedAbi] = useState(false)
 
     const handleCopy = (text: string) => {
         navigator.clipboard.writeText(text)
         setCopied(true)
         setTimeout(() => setCopied(false), 1200)
+    }
+
+    const handleCopyAbi = () => {
+        if (lastContractDeploy.abi) {
+            navigator.clipboard.writeText(JSON.stringify(lastContractDeploy.abi, null, 2))
+            setCopiedAbi(true)
+            setTimeout(() => setCopiedAbi(false), 1200)
+            toast.success('ABI copiada para a área de transferência!')
+        }
     }
 
     useEffect(() => {
@@ -245,7 +255,7 @@ export default function Deploy() {
                 </select>
             </div>
 
-            {/* Gas Estimado */}
+            {/* Cards 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="p-4 bg-slate-800/50 rounded-lg border border-slate-700">
                     <div className="flex items-center gap-2 mb-2">
@@ -262,7 +272,7 @@ export default function Deploy() {
                     <p className="text-slate-400 mb-2">Custo (USD)</p>
                     <p className="text-white">~$125.00</p>
                 </div>
-            </div>
+            </div>*/}
 
             {/* Botão Deploy */}
             <button
@@ -347,6 +357,29 @@ export default function Deploy() {
                                     )}
                                 </button>
                             </div>
+
+                            {/* ABI do contrato */}
+                            {lastContractDeploy.abi && (
+                                <>
+                                    <p className="text-slate-400 text-sm mb-2 mt-4">ABI do contrato:</p>
+                                    <div className="bg-slate-900 rounded-lg p-3 flex items-start justify-between gap-3">
+                                        <pre className="custom-scrollbar text-xs text-slate-300 font-mono flex-1 overflow-x-auto whitespace-pre-wrap break-all max-h-32 overflow-y-auto">
+                                            {JSON.stringify(lastContractDeploy.abi, null, 2)}
+                                        </pre>
+                                        <button
+                                            onClick={handleCopyAbi}
+                                            className="flex-shrink-0 p-1.5 rounded-md hover:bg-slate-700 transition"
+                                            title="Copiar ABI"
+                                        >
+                                            {copiedAbi ? (
+                                                <Check className="w-4 h-4 text-green-400" />
+                                            ) : (
+                                                <Copy className="w-4 h-4 text-slate-300" />
+                                            )}
+                                        </button>
+                                    </div>
+                                </>
+                            )}
 
                             {/* Botão para ver detalhes */}
                             <button
