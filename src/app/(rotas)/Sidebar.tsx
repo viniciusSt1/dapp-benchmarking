@@ -34,7 +34,9 @@ export default function Sidebar() {
                 <div className="p-6 border-b border-slate-800">
                     <div className="flex items-center gap-3">
                         <div className="w-10 h-10 bg-gradient-to-br to-blue-600 rounded-lg flex items-center justify-center">
-                            <img src="https://www.cpqd.com.br/wp-content/uploads/2022/12/CPQD_Logo_Positivo_RGB-1030x368-1.webp"></img>
+                            <Link href="/">
+                                <img src="https://www.cpqd.com.br/wp-content/uploads/2022/12/CPQD_Logo_Positivo_RGB-1030x368-1.webp" alt="Logo" />
+                            </Link>
                         </div>
                         <div>
                             <h1 className="text-white">dApp Aplicativo</h1>

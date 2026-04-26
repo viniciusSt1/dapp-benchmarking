@@ -72,9 +72,9 @@ export default function HistoricTests() {
                                 </td>
                             </tr>
                         ) : (
-                            [...historico].reverse().map((test, index) => (
+                            [...historico].map((test, originalIndex) => ({ test, originalIndex })).reverse().map(({ test, originalIndex }) => (
                                 <tr
-                                    key={index}
+                                    key={originalIndex}
                                     className="border-b border-slate-800 hover:bg-slate-800/30 transition-colors"
                                 >
                                     <td className="p-4 text-slate-300 text-center">
@@ -125,7 +125,7 @@ export default function HistoricTests() {
                                         <div className="flex items-center justify-center gap-3">
                                             <button
                                                 className="text-red-400 hover:text-red-300 transition-colors flex items-center gap-1"
-                                                onClick={() => handleDelete(index)}
+                                                onClick={() => handleDelete(originalIndex)}
                                             >
                                                 <Trash2 className="w-5 h-5" />
                                             </button>
